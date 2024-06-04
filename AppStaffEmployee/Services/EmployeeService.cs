@@ -41,9 +41,9 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         return employeeData.Id;
     }
 
-    public async Task<bool> EditEmployeeAsync(Guid employeeId, EmployeeDto employeeData)
+    public async Task<bool> EditEmployeeAsync(EmployeeDto employeeData)
     {
-        var targetEmployee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id == employeeId);
+        var targetEmployee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id == employeeData.Id);
 
         if (targetEmployee is null) return false;
 
