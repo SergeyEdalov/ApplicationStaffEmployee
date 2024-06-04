@@ -13,8 +13,6 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     private readonly IMapper _employeeMapper;
     private readonly ILogger<EmployeeService> _logger;
 
-    public EmployeeService() { }
-
     public EmployeeService(EmployeeContext employeeContext, IMapper employeeMapper, ILogger<EmployeeService> logger)
     {
         _employeeContext = employeeContext;
