@@ -1,6 +1,9 @@
 using Autofac.Extensions.DependencyInjection;
 using Autofac;
 using AppStaffEmployee.Models.Database;
+using AppStaffEmployee.Services;
+using AppStaffEmployee.Services.Interfaces;
+using AppStaffEmployee.Models.Dto;
 
 namespace AppStaffEmployee
 {
@@ -18,8 +21,10 @@ namespace AppStaffEmployee
             builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
             builder.Host.ConfigureContainer<ContainerBuilder>(cb =>
             {
-                cb.Register(c => new EmployeeContext(config.GetConnectionString("db"))).InstancePerDependency();
+                cb.Register(c => new EmployeeContext(config.GetConnectionString("employeeDb"))).InstancePerDependency();
             });
+            builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
+
 
             var app = builder.Build();
 

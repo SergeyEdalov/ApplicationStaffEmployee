@@ -1,4 +1,6 @@
 using AppStaffEmployee.Models;
+using AppStaffEmployee.Models.Dto;
+using AppStaffEmployee.Services.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
@@ -6,16 +8,19 @@ namespace AppStaffEmployee.Controllers;
 
 public class HomeController : Controller
 {
+    private readonly IEmployeeService<EmployeeDto, Guid> _employeeService;
     private readonly ILogger<HomeController> _logger;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(IEmployeeService<EmployeeDto, Guid> employeeService, ILogger<HomeController> logger)
     {
+        _employeeService = employeeService;
         _logger = logger;
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
+        var employeesTable = await _employeeService.GetAllEmployeesAsync();
+        return View(employeesTable);
     }
 
     public IActionResult Privacy()
