@@ -39,13 +39,15 @@ public class EmployeeContext : DbContext
                 .HasMaxLength(70)
                 .HasColumnName("full_name");
             entity.Property(k => k.Birthday)
-                .HasColumnName("birth_day");
+                .HasColumnName("birth_day")
+                .HasColumnType("timestamp without time zone");
             entity.Property(k => k.Department)
                 .HasColumnName("department");
             entity.Property(k => k.JobTitle)
                 .HasColumnName("job_title");
             entity.Property(k => k.WorkStart)
-                .HasColumnName("date_of_start_work");
+                .HasColumnName("date_of_start_work")
+                .HasColumnType("timestamp without time zone");
             entity.Property(k => k.Salary)
                 .HasColumnName("salary");
         });
@@ -98,7 +100,7 @@ public class EmployeeContext : DbContext
                 Birthday = new DateTime(1978, 3, 30),
                 Department = "bookkeeping",
                 JobTitle = "chief accountant",
-                WorkStart = new DateTime(),
+                WorkStart = new DateTime(2014, 6, 6),
                 Salary = 90000.0M
             },
             new EmployeeModel
