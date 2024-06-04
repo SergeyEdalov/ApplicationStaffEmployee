@@ -14,7 +14,6 @@
 
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
 
-            @* <input type="hidden" asp-for="Id" /> *@
             @Html.HiddenFor(model => model.Id)
 
             <div class="form-group">
@@ -24,7 +23,7 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="Birthday" class="control-label"></label>
+                <label asp-for="Birthday" class="control-label" ></label>
                 <input asp-for="Birthday" class="form-control" />
                 <span asp-validation-for="Birthday" class="text-danger"></span>
             </div>

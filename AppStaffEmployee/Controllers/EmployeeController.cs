@@ -54,6 +54,8 @@ namespace ApplicationStaffEmployee.Controllers
         [HttpPost]
         public async Task<IActionResult> Edit(EmployeeViewModel model)
         {
+            if (!ModelState.IsValid) return View(model); 
+
             var employeeDto = _mapper.Map<EmployeeDto>(model);
 
             if(employeeDto.Id is null)
@@ -84,50 +86,5 @@ namespace ApplicationStaffEmployee.Controllers
 
             return RedirectToAction("Index");
         }
-
-        //public IActionResult Privacy()
-        //{
-        //    return View();
-        //}
-
-        //[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        //public IActionResult Error()
-        //{
-        //    return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
-        //}
-
-        //public async Task<IActionResult> CreateEmployeeAsync(RequestCRUD request)
-        //{
-        //    var response = new ResponseCRUD(await _employeeService.CreateEmployeeAsync(request.EmployeeDto), null);
-
-        //    return View(response);
-        //}
-
-        //public async Task<IActionResult> UpdateEmployeeAsync(RequestCRUD request)
-        //{
-        //    if (request.EmployeeId != null)
-        //    {
-        //        var response = new ResponseCRUD(await _employeeService.UpdateEmployeeAsync((Guid)request.EmployeeId, request.EmployeeDto), null);
-        //        return View(response);
-        //    }
-        //    return View("Mistake");
-        //}
-
-        //public async Task<IActionResult> DeleteEmployeeAsync(RequestCRUD request)
-        //{
-        //    if (request.EmployeeId != null)
-        //    {
-        //        var response = new ResponseCRUD(await _employeeService.DeleteEmployeeAsync((Guid)request.EmployeeId), null);
-        //        return View(response);
-        //    }
-        //    return View("Mistake");
-        //}
-
-        //public async Task<IActionResult> GetEmployeeAsync(RequestCRUD request)
-        //{
-
-        //    var response = new ResponseCRUD(true, await _employeeService.GetAllEmployeesAsync());
-        //    return View(response);
-        //}
     }
 }

@@ -5,7 +5,7 @@ namespace AppStaffEmployee.Models;
 public class EmployeeModel
 {
     public Guid Id { get; set; }
-    public string FullName { get; set; }
+    public string FullName { get; set; } = null!;
 
     //[RegularExpression("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$\r\n")]
     public DateTime Birthday { get; set; }
