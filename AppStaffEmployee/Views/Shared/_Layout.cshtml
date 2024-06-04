@@ -6,6 +6,8 @@
     <title>@ViewData["Title"] - AppStaffEmployee</title>
 
     <partial name="Partial/_Styles" />
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <partial name="Partial/_Header" />
