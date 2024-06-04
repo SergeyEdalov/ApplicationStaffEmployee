@@ -6,7 +6,7 @@ namespace AppStaffEmployee.ViewModels;
 public class EmployeeViewModel
 {
     [HiddenInput(DisplayValue = false)]
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     [Required]
     public string FullName { get; set; }
 

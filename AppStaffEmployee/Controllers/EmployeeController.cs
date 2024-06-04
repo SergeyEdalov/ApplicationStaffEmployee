@@ -37,12 +37,14 @@ namespace ApplicationStaffEmployee.Controllers
 
         public async Task<IActionResult> Create()
         {
-            return View();
+            return View("Edit", new EmployeeViewModel());
         }
 
-        public async Task<IActionResult> Edit(Guid id)
+        public async Task<IActionResult> Edit(Guid? id)
         {
-            var employee = await _employeeService.GetEmpoloyeeByIDAsync(id);
+            if (id == null) return View(new EmployeeViewModel());
+
+            var employee = await _employeeService.GetEmpoloyeeByIDAsync((Guid)id);
             if (employee is null) return NotFound();
 
             var employeeView = _mapper.Map<EmployeeViewModel>(employee);
@@ -53,6 +55,12 @@ namespace ApplicationStaffEmployee.Controllers
         public async Task<IActionResult> Edit(EmployeeViewModel model)
         {
             var employeeDto = _mapper.Map<EmployeeDto>(model);
+
+            if(employeeDto.Id is null)
+            {
+                var id = await _employeeService.AddEmployeeAsync(employeeDto);
+                return RedirectToAction("Details", new {id});
+            }
             var success = await _employeeService.EditEmployeeAsync(employeeDto);
             
             if(!success) return NotFound();

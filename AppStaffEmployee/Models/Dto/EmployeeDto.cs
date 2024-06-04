@@ -4,7 +4,7 @@ namespace AppStaffEmployee.Models.Dto;
 
 public class EmployeeDto
 {
-    public Guid Id { get; set; }
+    public Guid? Id { get; set; }
     public string FullName { get; set; }
 
     //[RegularExpression("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$\r\n")]
