@@ -61,7 +61,20 @@ namespace ApplicationStaffEmployee.Controllers
 
         public async Task<IActionResult> Delete(Guid id)
         {
-            return View();
+            var employee = await _employeeService.GetEmpoloyeeByIDAsync(id);
+            if (employee is null) return NotFound();
+
+            var employeeView = _mapper.Map<EmployeeViewModel>(employee);
+            return View(employeeView);
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DeleteConfirmed(Guid id)
+        {
+            var success = await _employeeService.RemoveEmployeeAsync(id);
+            if (!success) return NotFound();
+
+            return RedirectToAction("Index");
         }
 
         //public IActionResult Privacy()
