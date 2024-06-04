@@ -1,13 +1,12 @@
 ﻿using AppStaffEmployee.Models.Dto;
 using AutoMapper;
 
-namespace AppStaffEmployee.Models.Mapper
+namespace AppStaffEmployee.Models.Mapper;
+
+public class EmployeeMapper : Profile
 {
-    public class EmployeeMapper : Profile
+    public EmployeeMapper()
     {
-        public EmployeeMapper()
-        {
-            CreateMap<EmployeeModel, EmployeeDto>(MemberList.Destination).ReverseMap();
-        }
+        CreateMap<EmployeeModel, EmployeeDto>(MemberList.Destination).ReverseMap();
     }
 }
