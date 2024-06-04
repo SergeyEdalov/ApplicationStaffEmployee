@@ -1,3 +1,7 @@
+using Autofac.Extensions.DependencyInjection;
+using Autofac;
+using AppStaffEmployee.Models.Database;
+
 namespace AppStaffEmployee
 {
     public class Program
@@ -8,6 +12,14 @@ namespace AppStaffEmployee
 
             // Add services to the container.
             builder.Services.AddControllersWithViews();
+
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
+
+            builder.Host.UseServiceProviderFactory(new AutofacServiceProviderFactory());
+            builder.Host.ConfigureContainer<ContainerBuilder>(cb =>
+            {
+                cb.Register(c => new EmployeeContext(config.GetConnectionString("db"))).InstancePerDependency();
+            });
 
             var app = builder.Build();
 
