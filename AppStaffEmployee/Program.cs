@@ -47,7 +47,7 @@ public class Program
         {
             opt.Cookie.Name = "AppStaffEmployee";
             opt.Cookie.HttpOnly = true;
-            //opt.Cookie.Expiration = TimeSpan.FromDays(14);
+            opt.ExpireTimeSpan = TimeSpan.FromDays(14);
 
             opt.LoginPath = "/Account/Login";
             opt.LogoutPath = "/Account/Logout";
