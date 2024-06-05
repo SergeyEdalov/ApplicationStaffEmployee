@@ -5,6 +5,10 @@ using AppStaffEmployee.Services;
 using AppStaffEmployee.Services.Interfaces;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Models.Mapper;
+using Identity.DAL.IdentityDB;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Identity;
+using Identity.DAL.Entities;
 
 namespace AppStaffEmployee;
 
@@ -14,9 +18,43 @@ public class Program
     {
         var builder = WebApplication.CreateBuilder(args);
 
-        // Add services to the container.
+        #region Конфигурация сервисов приложения
+
         builder.Services.AddControllersWithViews();
         builder.Services.AddAutoMapper(typeof(EmployeeMapper));
+        builder.Services.AddIdentity<User, Role>()
+            .AddEntityFrameworkStores<IdentityContext>()
+            .AddDefaultTokenProviders();
+
+        builder.Services.Configure<IdentityOptions>(opt =>
+        {
+        #if DEBUG
+            opt.Password.RequireDigit = false;
+            opt.Password.RequireLowercase = false;
+            opt.Password.RequireUppercase = false;
+            opt.Password.RequireNonAlphanumeric = false;
+            opt.Password.RequiredLength = 3;
+            opt.Password.RequiredUniqueChars = 3;
+        #endif
+            opt.User.RequireUniqueEmail = false;
+
+            opt.Lockout.AllowedForNewUsers = false;
+            opt.Lockout.MaxFailedAccessAttempts = 4;
+            opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(5);
+        });
+
+        builder.Services.ConfigureApplicationCookie(opt =>
+        {
+            opt.Cookie.Name = "AppStaffEmployee";
+            opt.Cookie.HttpOnly = true;
+            opt.Cookie.Expiration = TimeSpan.FromDays(14);
+
+            opt.LoginPath = "/Account/Login";
+            opt.LogoutPath = "/Account/Logout";
+            opt.AccessDeniedPath = "/Account/AccessDenied";
+
+            opt.SlidingExpiration = true;
+        });
 
         var config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
@@ -24,9 +62,18 @@ public class Program
         builder.Host.ConfigureContainer<ContainerBuilder>(cb =>
         {
             cb.Register(c => new EmployeeContext(config.GetConnectionString("employeeDb"))).InstancePerDependency();
-        });
-        builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
+            cb.Register(c =>
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<IdentityContext>();
+                optionsBuilder.UseNpgsql(config.GetConnectionString("employeeDb"));
 
+                return new IdentityContext(optionsBuilder.Options);
+            }).InstancePerDependency();
+        });
+        //builder.Services.AddDbContext<EmployeeContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
+        //builder.Services.AddDbContext<IdentityContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
+        builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
+        #endregion
 
         var app = builder.Build();
 
@@ -43,8 +90,8 @@ public class Program
 
         app.UseRouting();
 
-        //app.UseAuthentication();    
-        //app.UseAuthorization();
+        app.UseAuthentication();
+        app.UseAuthorization();
 
         app.MapControllerRoute(
             name: "default",
