@@ -29,6 +29,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Identity.DAL\Identity.DAL.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="wwwroot\lib\jquery\dist\jquery.js">
       <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
       <CopyToPublishDirectory>PreserveNewest</CopyToPublishDirectory>
