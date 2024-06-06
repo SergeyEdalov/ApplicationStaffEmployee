@@ -22,7 +22,16 @@ services:
       ADMINER_DEFAULT_SERVER: db
     ports:
       - 8080:8080
+  employee:
+    build:
+      context: .
+      dockerfile: AppStaffEmployee/Dockerfile
+    ports:
+      - 7129:7129
+    depends_on:
+      - db
+    environment:
+      - ASPNETCORE_URLS=https://0.0.0.0:7129
 
 volumes:
-  rabbitmq_data:
   postgres_data:

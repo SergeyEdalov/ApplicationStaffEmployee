@@ -23,6 +23,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employeeList = await _employeeContext.Employees.Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
+        _logger.LogInformation("Выведен список сотрудников");
 
         return employeeList;
     }
@@ -31,13 +32,15 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     {     
         var employee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id.Equals(employeeId));
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
+        _logger.LogInformation("Получен id сотрудника {0}", employee.FullName);
         return employeeDto;
     }
     public async Task<Guid> AddEmployeeAsync(EmployeeDto? employeeData)
     {
+        employeeData.Id = new Guid();
         await _employeeContext.AddAsync(_employeeMapper.Map<EmployeeModel>(employeeData));
         await _employeeContext.SaveChangesAsync();
-        //_logger.Log("Добавлен новый пользователь {0}", employeeData.FullName);
+        _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
         return (Guid)employeeData.Id;
     }
 
@@ -46,14 +49,12 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         var targetEmployee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id == employeeData.Id);
 
         if (targetEmployee is null) return false;
-
-        targetEmployee = _employeeMapper.Map<EmployeeModel>(employeeData);
-        _employeeContext.Employees.Update(targetEmployee);
+        _employeeMapper.Map(employeeData, targetEmployee);
 
         await _employeeContext.SaveChangesAsync();
+        _logger.LogInformation("Изменены данные сотрудника {0}", employeeData.FullName);
         return true;
     }
-
 
     public async Task<bool> RemoveEmployeeAsync(Guid employeeId)
     {
@@ -63,6 +64,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
 
         _employeeContext.Employees.Remove(targetEmployee);
         await _employeeContext.SaveChangesAsync();
+        _logger.LogInformation("Сотрудник {0} удален из списка", targetEmployee.FullName);
 
         return true;
     }

@@ -37,10 +37,10 @@
                     <td>
                         <a asp-action="Details" asp-route-id="@employee.Id">@employee.FullName</a>
                     </td>
-                    <td>@employee.Birthday</td>
+                    <td>@employee.Birthday.ToShortDateString()</td>
                     <td>@employee.Department</td>
                     <td>@employee.JobTitle</td>
-                    <td>@employee.WorkStart</td>
+                    <td>@employee.WorkStart.ToShortDateString()</td>
                     <td>@employee.Salary</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@employee.Id">

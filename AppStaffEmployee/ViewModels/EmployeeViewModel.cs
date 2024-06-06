@@ -11,11 +11,12 @@ public class EmployeeViewModel : IValidatableObject
     [Required(ErrorMessage = "ФИО обязательно")]
     [Display(Name = "Ф.И.О.")]
     [StringLength(100, MinimumLength = 2)]
-    [RegularExpression(@"([А-ЯЁ][а-яё]+)|([A-Z][a-z]+)", ErrorMessage = "Неверный формат данных")]
+    [RegularExpression(@"^[А-ЯЁA-Z][а-яёa-z]+(?:\s[А-ЯЁA-Z][а-яёa-z]+){1,2}$", ErrorMessage = "Неверный формат данных")]
     public string FullName { get; set; } = null!;
 
-    [RegularExpression("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$\r\n", ErrorMessage = "Неверный формат даты")]
     [Display(Name = "Дата рождения")]
+    [DataType(DataType.Date)]
+    //[RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{2})$", ErrorMessage = "Неверный формат даты")]
     public DateTime Birthday { get; set; }
     
     [Display(Name = "Отдел")]
@@ -24,11 +25,13 @@ public class EmployeeViewModel : IValidatableObject
     [Display(Name = "Должность")]
     public string JobTitle { get; set; }
 
-    [RegularExpression("^(0[1-9]|[12][0-9]|3[01])\\.(0[1-9]|1[0-2])\\.(19|20)\\d{2}$\r\n", ErrorMessage = "Неверный формат даты")]
     [Display(Name = "Дата начала работы")]
+    [DataType(DataType.Date)]
+    //[RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{2})$", ErrorMessage = "Неверный формат даты")]
     public DateTime WorkStart { get; set; }
     
-    [Display(Name = "Заработная плата")]    
+    [Display(Name = "Заработная плата")]
+    [RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "Зарплата должна быть числом с до двумя десятичными знаками.")]
     public decimal Salary { get; set; }
 
     //Подумать над своей валидацией или подключить библиотеку FluentValidation.DependencyInjection

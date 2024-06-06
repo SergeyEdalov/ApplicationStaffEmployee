@@ -9,6 +9,7 @@ using Identity.DAL.IdentityDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Identity.DAL.Entities;
+using System.Diagnostics;
 
 namespace AppStaffEmployee;
 
@@ -28,14 +29,14 @@ public class Program
 
         builder.Services.Configure<IdentityOptions>(opt =>
         {
-        #if DEBUG
+            #if DEBUG
             opt.Password.RequireDigit = false;
             opt.Password.RequireLowercase = false;
             opt.Password.RequireUppercase = false;
             opt.Password.RequireNonAlphanumeric = false;
             opt.Password.RequiredLength = 3;
             opt.Password.RequiredUniqueChars = 3;
-        #endif
+            #endif
             opt.User.RequireUniqueEmail = false;
 
             opt.Lockout.AllowedForNewUsers = false;
@@ -73,6 +74,18 @@ public class Program
         //builder.Services.AddDbContext<EmployeeContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
         //builder.Services.AddDbContext<IdentityContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
         builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
+
+        #if RELEASE
+        builder.WebHost.ConfigureKestrel((context, options) =>
+        {
+            options.ListenAnyIP(7129, listenOptions =>
+            {
+                listenOptions.UseHttps("/app/aspnetapp.pfx", "Str0ngP@ssw0rd!");
+            });
+            Debug.Print("!!!");
+        });
+        #endif
+
         #endregion
 
         var app = builder.Build();
