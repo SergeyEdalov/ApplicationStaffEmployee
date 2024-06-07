@@ -23,12 +23,13 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employeeList = await _employeeContext.Employees.Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
+        _logger.LogInformation("Получен список всех сотрудников");
 
         return employeeList;
     }
 
     public async Task<EmployeeDto?> GetEmpoloyeeByIDAsync(Guid employeeId)
-    {     
+    {
         var employee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id.Equals(employeeId));
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
         return employeeDto;
@@ -37,7 +38,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     {
         await _employeeContext.AddAsync(_employeeMapper.Map<EmployeeModel>(employeeData));
         await _employeeContext.SaveChangesAsync();
-        //_logger.Log("Добавлен новый пользователь {0}", employeeData.FullName);
+        _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
         return (Guid)employeeData.Id;
     }
 
@@ -51,6 +52,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         _employeeContext.Employees.Update(targetEmployee);
 
         await _employeeContext.SaveChangesAsync();
+        _logger.LogInformation("Сотрудник {0} отредактирован", employeeData.FullName);
         return true;
     }
 
@@ -63,8 +65,42 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
 
         _employeeContext.Employees.Remove(targetEmployee);
         await _employeeContext.SaveChangesAsync();
+        _logger.LogInformation("Сотрудник {0} удален", targetEmployee.FullName);
 
         return true;
     }
-}
 
+
+    public async Task<IEnumerable<EmployeeDto>> GetSortedAndFilteredDataAsync(string sortBy, string filterBy)
+    {
+        // Логика выполнения запроса к базе данных с учетом сортировки и фильтрации
+        //var query = _employeeContext.Employees.AsQueryable();
+        var query = (IEnumerable<EmployeeDto>) await _employeeContext.Employees
+            .Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
+        // Пример сортировки (может потребоваться доработка в зависимости от вашей модели данных)
+        if (!string.IsNullOrEmpty(sortBy))
+        {
+            switch (sortBy)
+            {
+                case "name":
+                    query = query.OrderBy(d => d.FullName);
+                    break;
+                case "salary":
+                    query = query.OrderBy(d => d.Salary);
+                    break;
+                    // Добавьте другие варианты сортировки по мере необходимости
+            }
+        }
+
+        // Пример фильтрации (может потребоваться доработка в зависимости от вашей модели данных)
+        if (!string.IsNullOrEmpty(filterBy))
+        {
+            query = query.Where(d => d.FullName.Contains(filterBy) || d.JobTitle.Contains(filterBy));
+        }
+        //foreach (var item in query)
+        //{
+        //    _employeeMapper.Map<UserDto>(item);
+        //}
+        return (IEnumerable<EmployeeDto>)query;
+    }
+}

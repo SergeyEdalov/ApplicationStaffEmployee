@@ -1,4 +1,6 @@
-﻿namespace AppStaffEmployee.Services.Interfaces;
+﻿using AppStaffEmployee.Models.Dto;
+
+namespace AppStaffEmployee.Services.Interfaces;
 
 public interface IEmployeeService<T, E>
 {
@@ -7,5 +9,6 @@ public interface IEmployeeService<T, E>
     Task<E> AddEmployeeAsync(T? employeeData);
     Task<bool> EditEmployeeAsync(T employeeData);
     Task<bool> RemoveEmployeeAsync(E? employeeId);
+    Task<IEnumerable<EmployeeDto>> GetSortedAndFilteredDataAsync(string sortBy, string filterBy);
 }
 

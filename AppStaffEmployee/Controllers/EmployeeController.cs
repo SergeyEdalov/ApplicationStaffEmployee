@@ -21,9 +21,10 @@ public class EmployeeController : Controller
         _mapper = mapper;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string sortBy, string filterBy)
     {
-        var employeesTable = await _employeeService.GetAllEmployeesAsync();
+        //var employeesTable = await _employeeService.GetAllEmployeesAsync();
+        var employeesTable = await _employeeService.GetSortedAndFilteredDataAsync(sortBy, filterBy);
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
         return View(employeeView);
     }
