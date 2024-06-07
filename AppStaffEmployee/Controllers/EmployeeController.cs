@@ -37,7 +37,7 @@ public class EmployeeController : Controller
         return View(employeeView);
     }
 
-    public async Task<IActionResult> Create()
+    public IActionResult Create()
     {
         return View("Create", new EmployeeViewModel());
     }
