@@ -39,17 +39,27 @@ public class EmployeeController : Controller
 
     public async Task<IActionResult> Create()
     {
-        return View("Edit", new EmployeeViewModel());
+        return View("Create", new EmployeeViewModel());
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Create(EmployeeViewModel model)
+    {
+        if (!ModelState.IsValid) return View(model);
+
+        var employeeDto = _mapper.Map<EmployeeDto>(model);
+        var id = await _employeeService.AddEmployeeAsync(employeeDto);
+        
+        return RedirectToAction("Details", new { id });
     }
 
     public async Task<IActionResult> Edit(Guid? id)
     {
-        if (id == null) return View(new EmployeeViewModel());
-
         var employee = await _employeeService.GetEmpoloyeeByIDAsync((Guid)id);
         if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
+
         return View(employeeView);
     }
 
@@ -60,11 +70,6 @@ public class EmployeeController : Controller
 
         var employeeDto = _mapper.Map<EmployeeDto>(model);
 
-        if(employeeDto.Id is null)
-        {
-            var id = await _employeeService.AddEmployeeAsync(employeeDto);
-            return RedirectToAction("Details", new {id});
-        }
         var success = await _employeeService.EditEmployeeAsync(employeeDto);
         
         if(!success) return NotFound();
