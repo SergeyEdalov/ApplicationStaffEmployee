@@ -4,7 +4,7 @@
     ViewData["Title"] = "Edit";
 }
 
-<h1>Edit</h1>
+<h1>Редактировать</h1>
 
 <hr />
 <div class="row">
@@ -22,7 +22,7 @@
             </div>
 
             <div class="form-group">
-                <label asp-for="Birthday" class="control-label" ></label>
+                <label asp-for="Birthday" class="control-label"></label>
                 <input asp-for="Birthday" class="form-control" />
                 <span asp-validation-for="Birthday" class="text-danger"></span>
             </div>
@@ -47,7 +47,7 @@
 
             <div class="form-group">
                 <label asp-for="Salary" class="control-label"></label>
-                <input asp-for="Salary" class="form-control" />
+                <input asp-for="Salary" class="form-control" type="number" step="0.01" />
                 <span asp-validation-for="Salary" class="text-danger"></span>
             </div>
 

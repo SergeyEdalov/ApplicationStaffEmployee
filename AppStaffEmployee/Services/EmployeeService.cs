@@ -37,7 +37,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     }
     public async Task<Guid> AddEmployeeAsync(EmployeeDto? employeeData)
     {
-        employeeData.Id = new Guid();
+        employeeData.Id = Guid.NewGuid();
         await _employeeContext.AddAsync(_employeeMapper.Map<EmployeeModel>(employeeData));
         await _employeeContext.SaveChangesAsync();
         _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);

@@ -16,7 +16,6 @@ public class EmployeeViewModel : IValidatableObject
 
     [Display(Name = "Дата рождения")]
     [DataType(DataType.Date)]
-    //[RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{2})$", ErrorMessage = "Неверный формат даты")]
     public DateTime Birthday { get; set; }
     
     [Display(Name = "Отдел")]
@@ -27,16 +26,19 @@ public class EmployeeViewModel : IValidatableObject
 
     [Display(Name = "Дата начала работы")]
     [DataType(DataType.Date)]
-    //[RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])\.(0[1-9]|1[0-2])\.(\d{2})$", ErrorMessage = "Неверный формат даты")]
+    //[DisplayFormat(DataFormatString = "{0:dd.MM.yyyy}", ApplyFormatInEditMode = true)]
+    //[RegularExpression(@"^(0[1-9]|[12][0-9]|3[01])\/(0[1-9]|1[0-2])\/(\d{2})$", ErrorMessage = "Неверный формат даты")]
     public DateTime WorkStart { get; set; }
     
     [Display(Name = "Заработная плата")]
-    [RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "Зарплата должна быть числом с до двумя десятичными знаками.")]
+    //[DisplayFormat(DataFormatString = "{0:N2}", ApplyFormatInEditMode = true)]
+    //[RegularExpression(@"^\d+(\.\d{1,2})?$", ErrorMessage = "Зарплата должна быть числом с до двумя десятичными знаками.")]
     public decimal Salary { get; set; }
 
     //Подумать над своей валидацией или подключить библиотеку FluentValidation.DependencyInjection
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        yield return ValidationResult.Success!;
+        //if(Salary.ToString().Contains(","))
+            yield return ValidationResult.Success!;
     }
 }

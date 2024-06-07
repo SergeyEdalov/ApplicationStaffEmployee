@@ -3,10 +3,8 @@
     ViewBag.Title = "Сотрудники";
 }
 
-<a class="btn btn-primary" asp-action="Create">Создать1</a>
+<a class="btn btn-primary" asp-action="Create">Добавить сотрудника</a>
 <br/>
-<a class="btn btn-secondary" asp-action="Edit">Создать2</a>
-
 
 @if (Model.Any())
 {
@@ -41,7 +39,7 @@
                     <td>@employee.Department</td>
                     <td>@employee.JobTitle</td>
                     <td>@employee.WorkStart.ToShortDateString()</td>
-                    <td>@employee.Salary</td>
+                    <td>@string.Format("{0:N2}", employee.Salary)</td>
                     <td>
                         <a asp-action="Edit" asp-route-id="@employee.Id">
                             <i class="fa fa-user-edit"></i>
