@@ -2,8 +2,10 @@
 using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
+using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace AppStaffEmployee.Services;
 
@@ -71,36 +73,44 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     }
 
 
-    public async Task<IEnumerable<EmployeeDto>> GetSortedAndFilteredDataAsync(string sortBy, string filterBy)
+    public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
     {
         // Логика выполнения запроса к базе данных с учетом сортировки и фильтрации
         //var query = _employeeContext.Employees.AsQueryable();
-        var query = (IEnumerable<EmployeeDto>) await _employeeContext.Employees
-            .Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
-        // Пример сортировки (может потребоваться доработка в зависимости от вашей модели данных)
-        if (!string.IsNullOrEmpty(sortBy))
+        //var query = (IEnumerable<EmployeeDto>) await _employeeContext.Employees
+        //    .Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
+        
+        var employeesQuery = _employeeContext.Employees.AsQueryable();
+
+        if (!string.IsNullOrEmpty(searchString))
         {
-            switch (sortBy)
+            employeesQuery = employeesQuery.Where(e => e.FullName.Contains(searchString));
+        }
+        var employees = await employeesQuery.AsNoTracking().ToListAsync();
+        var employeeDtos = employees.Select(e => _employeeMapper.Map<EmployeeDto>(e));
+
+        if (!string.IsNullOrEmpty(sortField) && !string.IsNullOrEmpty(sortOrder))
+        {
+            switch (sortField)
             {
-                case "name":
-                    query = query.OrderBy(d => d.FullName);
+                case "FullName":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.FullName) : employeeDtos.OrderByDescending(e => e.FullName);
                     break;
-                case "salary":
-                    query = query.OrderBy(d => d.Salary);
+                case "Salary":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.Salary) : employeeDtos.OrderByDescending(e => e.Salary);
                     break;
-                    // Добавьте другие варианты сортировки по мере необходимости
+                // Add more fields as needed
+                default:
+                    employeeDtos = employeeDtos.OrderBy(e => e.FullName);
+                    break;
             }
         }
-
-        // Пример фильтрации (может потребоваться доработка в зависимости от вашей модели данных)
-        if (!string.IsNullOrEmpty(filterBy))
-        {
-            query = query.Where(d => d.FullName.Contains(filterBy) || d.JobTitle.Contains(filterBy));
-        }
-        //foreach (var item in query)
+        //var employeesDto = ForEach(e =>  _employeeMapper.Map<EmployeeDto>(e));
+        //foreach (var item in employees)
         //{
-        //    _employeeMapper.Map<UserDto>(item);
+        //    _employeeMapper.Map<EmployeeDto>(item);
         //}
-        return (IEnumerable<EmployeeDto>)query;
+        //var result = await employeesQuery.AsNoTracking().ToListAsync();
+        return employeeDtos.ToList();
     }
 }

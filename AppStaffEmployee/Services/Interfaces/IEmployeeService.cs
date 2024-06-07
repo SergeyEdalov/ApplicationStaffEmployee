@@ -9,6 +9,6 @@ public interface IEmployeeService<T, E>
     Task<E> AddEmployeeAsync(T? employeeData);
     Task<bool> EditEmployeeAsync(T employeeData);
     Task<bool> RemoveEmployeeAsync(E? employeeId);
-    Task<IEnumerable<EmployeeDto>> GetSortedAndFilteredDataAsync(string sortBy, string filterBy);
+    Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString);
 }
 

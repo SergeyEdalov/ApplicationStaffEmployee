@@ -21,10 +21,11 @@ public class EmployeeController : Controller
         _mapper = mapper;
     }
 
-    public async Task<IActionResult> Index(string sortBy, string filterBy)
+    public async Task<IActionResult> Index(string sortOrder, string sortField, string searchString)
     {
         //var employeesTable = await _employeeService.GetAllEmployeesAsync();
-        var employeesTable = await _employeeService.GetSortedAndFilteredDataAsync(sortBy, filterBy);
+        //var employeesTable = await _employeeService.GetSortedAndFilteredDataAsync(sortBy, filterBy);
+        var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
         return View(employeeView);
     }
