@@ -2,8 +2,11 @@
 using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
+using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using X.PagedList;
 
 namespace AppStaffEmployee.Services;
 
@@ -23,13 +26,13 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employeeList = await _employeeContext.Employees.Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
-        _logger.LogInformation("Выведен список сотрудников");
+        _logger.LogInformation("Получен список всех сотрудников");
 
         return employeeList;
     }
 
     public async Task<EmployeeDto?> GetEmpoloyeeByIDAsync(Guid employeeId)
-    {     
+    {
         var employee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id.Equals(employeeId));
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
         _logger.LogInformation("Получен id сотрудника {0}", employee.FullName);
@@ -52,7 +55,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         _employeeMapper.Map(employeeData, targetEmployee);
 
         await _employeeContext.SaveChangesAsync();
-        _logger.LogInformation("Изменены данные сотрудника {0}", employeeData.FullName);
+        _logger.LogInformation("Сотрудник {0} отредактирован", employeeData.FullName);
         return true;
     }
 
@@ -64,9 +67,58 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
 
         _employeeContext.Employees.Remove(targetEmployee);
         await _employeeContext.SaveChangesAsync();
-        _logger.LogInformation("Сотрудник {0} удален из списка", targetEmployee.FullName);
+        _logger.LogInformation("Сотрудник {0} удален", targetEmployee.FullName);
 
         return true;
     }
-}
 
+
+    public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
+    {
+        var employeesQuery = await _employeeContext.Employees.AsNoTracking().AsQueryable().ToListAsync();
+        //var employees = await employeesQuery.ToListAsync();
+
+        if (!string.IsNullOrEmpty(searchString))
+        {
+            employeesQuery = employeesQuery.Where(e =>
+                e.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                e.Birthday.ToString("dd.MM.yyyy").Contains(searchString) ||
+                e.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                e.JobTitle.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
+                e.WorkStart.ToString("dd.MM.yyyy").Contains(searchString) ||
+                e.Salary.ToString().Contains(searchString))
+                .ToList();
+        }
+        var employeeDtos = employeesQuery.Select(e => _employeeMapper.Map<EmployeeDto>(e));
+
+        if (!string.IsNullOrEmpty(sortField) && !string.IsNullOrEmpty(sortOrder))
+        {
+            switch (sortField)
+            {
+                case "FullName":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.FullName) : employeeDtos.OrderByDescending(e => e.FullName);
+                    break;
+                case "Birthday":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.Birthday) : employeeDtos.OrderByDescending(e => e.Birthday);
+                    break;
+                case "Department":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.Department) : employeeDtos.OrderByDescending(e => e.Department);
+                    break;
+                case "JobTitle":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.JobTitle) : employeeDtos.OrderByDescending(e => e.JobTitle);
+                    break;
+                case "WorkStart":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.WorkStart) : employeeDtos.OrderByDescending(e => e.WorkStart);
+                    break;
+                case "Salary":
+                    employeeDtos = sortOrder == "asc" ? employeeDtos.OrderBy(e => e.Salary) : employeeDtos.OrderByDescending(e => e.Salary);
+                    break;
+                default:
+                    employeeDtos = employeeDtos.OrderBy(e => e.FullName);
+                    break;
+            }
+        }
+        var result = employeeDtos; // Для теста
+        return employeeDtos;
+    }
+}

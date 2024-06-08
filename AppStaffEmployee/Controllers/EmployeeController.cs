@@ -4,6 +4,8 @@ using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.Drawing.Printing;
+using X.PagedList;
 
 namespace ApplicationStaffEmployee.Controllers;
 
@@ -13,6 +15,7 @@ public class EmployeeController : Controller
     private readonly IEmployeeService<EmployeeDto, Guid> _employeeService;
     private readonly ILogger<EmployeeController> _logger;
     private readonly IMapper _mapper;
+    private const int _pageSize = 5;
 
     public EmployeeController(IEmployeeService<EmployeeDto, Guid> employeeService, ILogger<EmployeeController> logger, IMapper mapper)
     {
@@ -21,11 +24,16 @@ public class EmployeeController : Controller
         _mapper = mapper;
     }
 
-    public async Task<IActionResult> Index()
+    public async Task<IActionResult> Index(string sortOrder, string sortField, string searchString, int? page)
     {
-        var employeesTable = await _employeeService.GetAllEmployeesAsync();
+        int pageNumber = page ?? 1;
+        var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
-        return View(employeeView);
+        ViewData["CurrentSortOrder"] = sortOrder;
+        ViewData["CurrentSortField"] = sortField;
+        ViewData["CurrentFilter"] = searchString;
+        var result = employeeView.ToPagedList(pageNumber, _pageSize); // Для теста
+        return View(result);
     }
 
     public async Task<IActionResult> Details (Guid id)

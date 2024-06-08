@@ -1,10 +1,40 @@
-﻿@model IEnumerable<AppStaffEmployee.ViewModels.EmployeeViewModel>
+﻿@model IPagedList<AppStaffEmployee.ViewModels.EmployeeViewModel>
+@using X.PagedList
+@using X.PagedList.Mvc.Core
 @{
     ViewBag.Title = "Сотрудники";
+    var currentSortField = ViewData["CurrentSortField"] as string;
+    var currentSortOrder = ViewData["CurrentSortOrder"] as string;
+    var currentFilter = ViewData["CurrentFilter"] as string;
 }
 
 <a class="btn btn-primary" asp-action="Create">Добавить сотрудника</a>
 <br/>
+
+<form asp-action="Index" method="get">
+    <p>
+        Search: <input type="text" name="searchString" value="@ViewData["CurrentFilter"]" />
+        <input type="submit" value="Поиск" />
+    </p>
+    <p>
+        Sort by:
+        <select name="sortField">
+            <!option value="FullName" @(currentSortField == "FullName" ? "selected" : "")>Имя</!option>
+            <!option value="Birthday" @(currentSortField == "Birthday" ? "selected" : "")>Дата рождения</!option>
+            <!option value="Department" @(currentSortField == "Department" ? "selected" : "")>Отдел</!option>
+            <!option value="JobTitle" @(currentSortField == "JobTitle" ? "selected" : "")>Должность</!option>
+            <!option value="WorkStart" @(currentSortField == "WorkStart" ? "selected" : "")>Дата начала работы</!option>
+            <!option value="Salary" @(currentSortField == "Salary" ? "selected" : "")>Зарплата</!option>
+        </select>
+        Order:
+        <select name="sortOrder">
+            <!option value="asc" @(currentSortOrder == "asc" ? "selected" : "")>По возрастанию</!option>
+            <!option value="desc" @(currentSortOrder == "desc" ? "selected" : "")>По убыванию</!option>
+        </select>
+        <input type="submit" value="Сортировать" />
+    </p>
+</form>
+
 
 @if (Model.Any())
 {
@@ -49,6 +79,16 @@
             }
         </tbody>
     </table>
+
+    <div style="display: flex">
+        @Html.PagedListPager(Model, page => Url.Action("Index", new
+            {
+                page,
+                sortOrder = ViewData["CurrentSortOrder"],
+                sortField = ViewData["CurrentSortField"],
+                searchString = ViewData["CurrentFilter"]
+            }))
+    </div>
 }
 else
 {
