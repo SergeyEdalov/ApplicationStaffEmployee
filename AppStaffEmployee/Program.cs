@@ -74,6 +74,7 @@ public class Program
         //builder.Services.AddDbContext<EmployeeContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
         //builder.Services.AddDbContext<IdentityContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
         builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
+        builder.Services.AddSingleton<IAccountService, AccountService>();
 
         #if RELEASE
         builder.WebHost.ConfigureKestrel((context, options) =>

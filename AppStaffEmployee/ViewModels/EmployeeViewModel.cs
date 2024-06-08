@@ -38,7 +38,6 @@ public class EmployeeViewModel : IValidatableObject
     //Подумать над своей валидацией или подключить библиотеку FluentValidation.DependencyInjection
     public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
     {
-        //if(Salary.ToString().Contains(","))
-            yield return ValidationResult.Success!;
+        yield return ValidationResult.Success!;
     }
 }
