@@ -1,22 +1,22 @@
-﻿using AppStaffEmployee.ViewModels.Identity;
-using Identity.DAL.Entities;
-using Microsoft.AspNetCore.Identity;
+﻿using AppStaffEmployee.Models.Dto;
+using AppStaffEmployee.Services.Interfaces;
+using AppStaffEmployee.ViewModels.Identity;
+using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AppStaffEmployee.Controllers;
 
 public class AccountController : Controller
 {
-    private readonly UserManager<User> _userManager;
-    private readonly SignInManager<User> _signInManager;
+    private readonly IAccountService _accountService;
+    private readonly IMapper _mapper;
     private readonly ILogger<AccountController> _logger;
 
-    public AccountController(
-        UserManager<User> userManager,
-        SignInManager<User> signInManager, ILogger<AccountController> logger)
+    public AccountController(IAccountService accountService,
+        IMapper mapper, ILogger<AccountController> logger)
     {
-        _userManager = userManager;
-        _signInManager = signInManager;
+        _accountService = accountService;
+        _mapper = mapper;
         _logger = logger;
     }
 
@@ -31,21 +31,16 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        var user = new User { UserName = model.UserName };
+        var userDto = _mapper.Map<UserDto>(model);
 
-        var result = await _userManager.CreateAsync(user, model.Password);
+        var result = await _accountService.RegisterAsync(userDto);
 
         if (result.Succeeded)
-        {
-            _logger.LogInformation("Пользователь {0} успешно создан", user);
-
-            await _signInManager.SignInAsync(user, isPersistent: false);
-
             return RedirectToAction("Index", "Home");
-        }
 
         foreach (var error in result.Errors)
         {
+            _logger.LogError(error.Description);
             ModelState.AddModelError("", error.Description);
         }
         return View(model);
@@ -67,32 +62,27 @@ public class AccountController : Controller
     {
         if (!ModelState.IsValid) return View(model);
 
-        var result = await _signInManager.PasswordSignInAsync(
-            model.UserName, 
-            model.Password,
-            model.RememberMe,
-            true);
+        var userDto = _mapper.Map<UserDto>(model);
+
+        var result = await _accountService.LoginAsync(userDto);
 
         if (result.Succeeded)
         {
             _logger.LogInformation("Пользователь {0} успешно вошел в систему", model.UserName);
-            
+
             return LocalRedirect(model.ReturnUrl ?? "/");
         }
 
         ModelState.AddModelError("", "Неверное имя пользователя или пароль");
         _logger.LogWarning("Ошибка при входе в систему {0}", model.UserName);
-        
+
         return View(model);
     }
     #endregion
     public async Task<IActionResult> Logout()
     {
-        await _signInManager.SignOutAsync();
+        await _accountService.LogoutAsync();
         return RedirectToAction("Index", "Home");
-    }   
-    public async Task<IActionResult> AccessDenied()
-    {
-        return View();
     }
+    public async Task<IActionResult> AccessDenied() => View();
 }
