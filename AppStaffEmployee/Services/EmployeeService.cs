@@ -6,6 +6,7 @@ using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using X.PagedList;
 
 namespace AppStaffEmployee.Services;
 
@@ -75,12 +76,12 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
 
     public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
     {
-        var employeesQuery = _employeeContext.Employees.AsNoTracking().AsQueryable();
-        var employees = await employeesQuery.ToListAsync();
+        var employeesQuery = await _employeeContext.Employees.AsNoTracking().AsQueryable().ToListAsync();
+        //var employees = await employeesQuery.ToListAsync();
 
         if (!string.IsNullOrEmpty(searchString))
         {
-            employees = employees.Where(e =>
+            employeesQuery = employeesQuery.Where(e =>
                 e.FullName.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
                 e.Birthday.ToString("dd.MM.yyyy").Contains(searchString) ||
                 e.Department.Contains(searchString, StringComparison.OrdinalIgnoreCase) ||
@@ -89,7 +90,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
                 e.Salary.ToString().Contains(searchString))
                 .ToList();
         }
-        var employeeDtos = employees.Select(e => _employeeMapper.Map<EmployeeDto>(e));
+        var employeeDtos = employeesQuery.Select(e => _employeeMapper.Map<EmployeeDto>(e));
 
         if (!string.IsNullOrEmpty(sortField) && !string.IsNullOrEmpty(sortOrder))
         {
@@ -118,6 +119,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
                     break;
             }
         }
-        return employeeDtos.ToList();
+        var result = employeeDtos; // Для теста
+        return employeeDtos;
     }
 }

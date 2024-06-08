@@ -1,4 +1,5 @@
 ﻿using AppStaffEmployee.Models.Dto;
+using X.PagedList;
 
 namespace AppStaffEmployee.Services.Interfaces;
 
