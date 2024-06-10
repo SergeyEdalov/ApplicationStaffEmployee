@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AppStaffEmployee", "AppStaf
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Identity.DAL", "Identity.DAL\Identity.DAL.csproj", "{CB4FEF5D-ADD4-4545-9C35-021096BBC44A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EmployeeTests", "EmployeeTests\EmployeeTests.csproj", "{EB56BAD7-5337-4345-89B5-8AAFB71D8919}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{CB4FEF5D-ADD4-4545-9C35-021096BBC44A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{CB4FEF5D-ADD4-4545-9C35-021096BBC44A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{CB4FEF5D-ADD4-4545-9C35-021096BBC44A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB56BAD7-5337-4345-89B5-8AAFB71D8919}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB56BAD7-5337-4345-89B5-8AAFB71D8919}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB56BAD7-5337-4345-89B5-8AAFB71D8919}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB56BAD7-5337-4345-89B5-8AAFB71D8919}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
