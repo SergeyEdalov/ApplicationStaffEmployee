@@ -33,6 +33,7 @@ public class EmployeeController : Controller
         ViewData["CurrentSortField"] = sortField;
         ViewData["CurrentFilter"] = searchString;
         var result = employeeView.ToPagedList(pageNumber, _pageSize); // Для теста
+        _logger.LogInformation("Контроллер получил список всех сотрудников с сортировкой и фильтром");
         return View(result);
     }
 
@@ -42,6 +43,7 @@ public class EmployeeController : Controller
         if (employee is null)  return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
+        _logger.LogInformation("Получена информация о сотруднике {0}", employeeView.FullName);
         return View(employeeView);
     }
 
@@ -57,7 +59,9 @@ public class EmployeeController : Controller
 
         var employeeDto = _mapper.Map<EmployeeDto>(model);
         var id = await _employeeService.AddEmployeeAsync(employeeDto);
-        
+
+        _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
+
         return RedirectToAction("Details", new { id });
     }
 
@@ -67,6 +71,8 @@ public class EmployeeController : Controller
         if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
+
+        _logger.LogInformation("Получен сотрудник {0} для редактирования.", employeeView.FullName);
 
         return View(employeeView);
     }
@@ -81,6 +87,8 @@ public class EmployeeController : Controller
         var success = await _employeeService.EditEmployeeAsync(employeeDto);
         
         if(!success) return NotFound();
+
+        _logger.LogInformation("Сотрудник {0} отредактирован.", employeeDto.FullName);
         return RedirectToAction("Index");
     }
 
@@ -90,6 +98,8 @@ public class EmployeeController : Controller
         if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
+
+        _logger.LogInformation("Получен сотрудник {0} для удаления.", employeeView.FullName);
         //return View(employeeView); //Вариант для перехода на отдельную страницу
         return PartialView("DeleteEmployeeModalWindow", employeeView); //Вариант для перехода на модальное окно
     }
@@ -99,6 +109,8 @@ public class EmployeeController : Controller
     {
         var success = await _employeeService.RemoveEmployeeAsync(id);
         if (!success) return NotFound();
+
+        _logger.LogInformation("Сотрудник {0} удален из списка.", id);
 
         return RedirectToAction("Index");
     }
