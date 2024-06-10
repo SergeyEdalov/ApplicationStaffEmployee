@@ -90,7 +90,8 @@ public class EmployeeController : Controller
         if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
-        return View(employeeView);
+        //return View(employeeView); //Вариант для перехода на отдельную страницу
+        return PartialView("DeleteEmployeeModalWindow", employeeView); //Вариант для перехода на модальное окно
     }
 
     [HttpPost]

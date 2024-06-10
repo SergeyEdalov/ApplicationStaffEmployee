@@ -9,7 +9,7 @@
 }
 
 <a class="btn btn-primary" asp-action="Create">Добавить сотрудника</a>
-<br/>
+<br />
 
 <form asp-action="Index" method="get">
     <p>
@@ -57,9 +57,14 @@
             {
                 <tr>
                     <td>
-                        <a asp-action="Delete" asp-route-id="@employee.Id" class="text-danger">
+                        <!-- Вариант для перехода на модальное окно -->
+                        <button type="button" class="btn btn-danger" onclick="openDeleteModal('@employee.Id')">
                             <i class="fa fa-trash-alt"></i>
-                        </a>
+                        </button>
+                        <!-- Вариант для перехода на отдельную страницу -->
+@*                         <a asp-action="Delete" asp-route-id="@employee.Id" class="text-danger">
+                            <i class="fa fa-trash-alt"></i>
+                        </a> *@
                     </td>
                     <td>@employee.Id</td>
                     <td>
