@@ -115,6 +115,4 @@ public class EmployeeContext : DbContext
                 Salary = 100000.0M
             });
     }
-
-public DbSet<AppStaffEmployee.ViewModels.EmployeeViewModel> EmployeeViewModel { get; set; } = default!;
 }

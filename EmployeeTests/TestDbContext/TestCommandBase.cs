@@ -6,8 +6,8 @@ namespace EmployeeTests.TestDbContext;
 
 public class TestCommandBase
 {
-    public EmployeeContext _employeeContext;
-    public IdentityContext _identityContext;
+    public static EmployeeContext _employeeContext;
+    public static IdentityContext _identityContext;
 
     public static EmployeeContext getEContext() => TestDbContext.CreateTableEmployees();
     
