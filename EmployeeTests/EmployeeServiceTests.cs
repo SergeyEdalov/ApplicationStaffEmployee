@@ -60,14 +60,30 @@ public class EmployeeServiceTests : TestCommandBase
     }
 
     [TestMethod]
-    public async Task Test_Succsess_GetEmpoloyeeByID()
+    public async Task Test_GetEmpoloyeeByID_Succsess()
     {
         // Arrange
         var employeeId = new Guid("67bbefef-a586-4416-b5f5-8d70f3b51d44");
+
         // Act
         var actual = await _employeeService.GetEmpoloyeeByIDAsync(employeeId);
 
         // Assert
         Assert.AreEqual(employeeId, actual.Id);
+    }
+
+    [TestMethod]
+    public async Task Test_GetEmpoloyeeByID_NullId()
+    {
+        // Arrange
+        var employeeId1 = new Guid("67bbefef-a586-4416-b5f5-8d70f3b51d56");
+        var employeeId2 = new Guid();
+        // Act
+        var actual1 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId1);
+        var actual2 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId2);
+
+        // Assert
+        Assert.IsNull(actual1);
+        Assert.IsNull(actual2);
     }
 }

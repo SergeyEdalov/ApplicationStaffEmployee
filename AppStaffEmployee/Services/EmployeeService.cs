@@ -2,10 +2,8 @@
 using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
-using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using X.PagedList;
 
 namespace AppStaffEmployee.Services;
@@ -34,6 +32,14 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<EmployeeDto?> GetEmpoloyeeByIDAsync(Guid employeeId)
     {
         var employee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id.Equals(employeeId));
+
+        if (employee is null)
+        {
+            _logger.LogWarning($"Не найден сотрудник в БД по id = {0}", employeeId);
+            return null;
+            //throw new NullReferenceException($"{employeeId} нет в базе данных");
+        }
+
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
         _logger.LogInformation("Получен id сотрудника {0}", employee.FullName);
         return employeeDto;
