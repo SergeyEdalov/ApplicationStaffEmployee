@@ -37,10 +37,10 @@ public class EmployeeController : Controller
         return View(result);
     }
 
-    public async Task<IActionResult> Details (Guid id)
+    public async Task<IActionResult> Details(Guid id)
     {
         var employee = await _employeeService.GetEmpoloyeeByIDAsync(id);
-        if (employee is null)  return NotFound();
+        if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
         _logger.LogInformation("Получена информация о сотруднике {0}", employeeView.FullName);
@@ -56,13 +56,16 @@ public class EmployeeController : Controller
     public async Task<IActionResult> Create(EmployeeViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
+        try
+        {
+            var employeeDto = _mapper.Map<EmployeeDto>(model);
+            var id = await _employeeService.AddEmployeeAsync(employeeDto);
 
-        var employeeDto = _mapper.Map<EmployeeDto>(model);
-        var id = await _employeeService.AddEmployeeAsync(employeeDto);
+            _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
+            return RedirectToAction("Details", new { id });
+        }
+        catch (Exception ex) { return View(ex); }
 
-        _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
-
-        return RedirectToAction("Details", new { id });
     }
 
     public async Task<IActionResult> Edit(Guid? id)
@@ -80,13 +83,13 @@ public class EmployeeController : Controller
     [HttpPost]
     public async Task<IActionResult> Edit(EmployeeViewModel model)
     {
-        if (!ModelState.IsValid) return View(model); 
+        if (!ModelState.IsValid) return View(model);
 
         var employeeDto = _mapper.Map<EmployeeDto>(model);
 
         var success = await _employeeService.EditEmployeeAsync(employeeDto);
-        
-        if(!success) return NotFound();
+
+        if (!success) return NotFound();
 
         _logger.LogInformation("Сотрудник {0} отредактирован.", employeeDto.FullName);
         return RedirectToAction("Index");

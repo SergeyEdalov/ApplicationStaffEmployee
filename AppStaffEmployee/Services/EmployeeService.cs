@@ -47,10 +47,15 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<Guid> AddEmployeeAsync(EmployeeDto? employeeData)
     {
         employeeData.Id = Guid.NewGuid();
-        await _employeeContext.AddAsync(_employeeMapper.Map<EmployeeModel>(employeeData));
-        await _employeeContext.SaveChangesAsync();
-        _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
-        return (Guid)employeeData.Id;
+        try
+        {
+            var employeeModel = _employeeMapper.Map<EmployeeModel>(employeeData);
+            await _employeeContext.AddAsync(employeeModel);
+            await _employeeContext.SaveChangesAsync();
+            _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
+            return (Guid)employeeData.Id;
+        }
+        catch (Exception ex) { throw new Exception("Ошибка добавления сотрудника"); }
     }
 
     public async Task<bool> EditEmployeeAsync(EmployeeDto employeeData)

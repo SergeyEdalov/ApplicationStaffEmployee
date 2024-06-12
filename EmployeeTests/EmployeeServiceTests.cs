@@ -1,8 +1,10 @@
 using AppStaffEmployee.Models;
+using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services;
 using AutoMapper;
 using EmployeeTests.TestDbContext;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -16,6 +18,7 @@ public class EmployeeServiceTests : TestCommandBase
     private static EmployeeService _employeeService;
     private static EmployeeDto _employeeDto;
 
+    #region Конфигурирование системы
     [AssemblyInitialize]
     public static void Init(TestContext context)
     {
@@ -48,6 +51,7 @@ public class EmployeeServiceTests : TestCommandBase
                 });
 
         _employeeService = new EmployeeService(_employeeContext, _employeeMockMapper.Object, _loggerMock.Object);
+        _employeeDto = new EmployeeDto();
     }
     [AssemblyCleanup]
     public static void CleanUp()
@@ -58,7 +62,9 @@ public class EmployeeServiceTests : TestCommandBase
             _employeeContext = null;
         }
     }
+    #endregion
 
+    #region Тесты метода получения идентификатора сотрудника
     [TestMethod]
     public async Task Test_GetEmpoloyeeByID_Succsess()
     {
@@ -85,5 +91,80 @@ public class EmployeeServiceTests : TestCommandBase
         // Assert
         Assert.IsNull(actual1);
         Assert.IsNull(actual2);
+    }
+    #endregion
+
+    #region Тесты метода добавления сотрудника
+    [TestMethod]
+    public async Task Test_AddEmpoloyee_Succsess()
+    {
+        // Arrange
+        _employeeDto = new EmployeeDto();
+        _employeeDto.FullName = "Чертополохова Анастасия Николаевна";
+        _employeeDto.Birthday = new DateTime(1965, 3, 20);
+        _employeeDto.Department = "Сметный";
+        _employeeDto.JobTitle = "Сметчик";
+        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
+        _employeeDto.Salary = 82000.0M;
+        
+
+        // Act
+        var employeeIdExpected= await _employeeService.AddEmployeeAsync(_employeeDto);
+        var expected = await _employeeContext.Employees
+            .FirstOrDefaultAsync(x => x.FullName.Equals("Чертополохова Анастасия Николаевна"));
+
+        // Assert
+        Assert.AreEqual(expected.FullName, _employeeDto.FullName);
+        Assert.IsNotNull(employeeIdExpected);
+    }
+
+    //[TestMethod]
+    ////[ExpectedException(typeof(Exception))]
+    //public async Task Test_AddEmpoloyee_Exception()
+    //{
+    //    // Arrange
+    //    _employeeDto.FullName = null;
+    //    _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
+    //    _employeeDto.Department = "Сметный";
+    //    _employeeDto.JobTitle = "Сметчик";
+    //    _employeeDto.WorkStart = new DateTime(2006, 5, 18);
+    //    _employeeDto.Salary = 82000.0M;
+
+    //    Exception ex = new Exception();
+    //    // Act
+    //    //Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(employeeDto));
+    //    //CleanUp();
+    //    var exception = Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
+    //    //Init();
+    //    var employeeModel = _employeeMockMapper.Object.Map<EmployeeModel>(_employeeDto);
+    //    //_employeeContext.Entry(employeeModel).State = EntityState.Detached;
+    //    _employeeContext.Employees.Remove(employeeModel);
+    //    _employeeContext.SaveChanges();
+    //    // Assert
+    //    Assert.IsNotNull(exception);
+    //    Assert.AreEqual("Ошибка добавления сотрудника", exception.Message);
+    //}
+    #endregion
+
+
+    [TestMethod]
+    public async Task Test_EditEmpoloyee_Succsess()
+    {
+        // Arrange
+        _employeeDto.Id = Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"); //id Коноваловой
+        _employeeDto.FullName = "Мохова Ирина Владимировна";
+        _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
+        _employeeDto.Department = "Сметный";
+        _employeeDto.JobTitle = "Сметчик";
+        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
+        _employeeDto.Salary = 51000.0M;
+
+        // Act
+        var actual = await _employeeService.EditEmployeeAsync(_employeeDto);
+        var expectedEmployee = _employeeContext.Employees.FirstOrDefault(x => x.Id == Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"));
+
+        // Assert
+        Assert.IsTrue(actual);
+        Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
     }
 }
