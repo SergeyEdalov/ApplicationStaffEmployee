@@ -49,6 +49,18 @@ public class EmployeeServiceTests : TestCommandBase
                     WorkStart = src.WorkStart,
                     Salary = src.Salary,
                 });
+        _employeeMockMapper.Setup(x => x.Map(It.IsAny<EmployeeDto>(), It.IsAny<EmployeeModel>()))
+                .Returns((EmployeeDto src, EmployeeModel dest) =>
+                {
+                    dest.Id = src.Id ?? dest.Id;
+                    dest.FullName = src.FullName;
+                    dest.Birthday = src.Birthday;
+                    dest.Department = src.Department;
+                    dest.JobTitle = src.JobTitle;
+                    dest.WorkStart = src.WorkStart;
+                    dest.Salary = src.Salary;
+                    return dest;
+                });
 
         _employeeService = new EmployeeService(_employeeContext, _employeeMockMapper.Object, _loggerMock.Object);
         _employeeDto = new EmployeeDto();
@@ -66,7 +78,7 @@ public class EmployeeServiceTests : TestCommandBase
 
     #region Тесты метода получения идентификатора сотрудника
     [TestMethod]
-    public async Task Test_GetEmpoloyeeByID_Succsess()
+    public async Task Test_GetEmpoloyeeByID_Success()
     {
         // Arrange
         var employeeId = new Guid("67bbefef-a586-4416-b5f5-8d70f3b51d44");
@@ -96,7 +108,7 @@ public class EmployeeServiceTests : TestCommandBase
 
     #region Тесты метода добавления сотрудника
     [TestMethod]
-    public async Task Test_AddEmpoloyee_Succsess()
+    public async Task Test_AddEmpoloyee_Success()
     {
         // Arrange
         _employeeDto = new EmployeeDto();
@@ -106,16 +118,18 @@ public class EmployeeServiceTests : TestCommandBase
         _employeeDto.JobTitle = "Сметчик";
         _employeeDto.WorkStart = new DateTime(2006, 5, 18);
         _employeeDto.Salary = 82000.0M;
-        
+        var expectedCountEmployees = _employeeContext.Employees.Count();
 
         // Act
-        var employeeIdExpected= await _employeeService.AddEmployeeAsync(_employeeDto);
-        var expected = await _employeeContext.Employees
+        var expectedEmployeeId = await _employeeService.AddEmployeeAsync(_employeeDto);
+        var expectedEmployee = await _employeeContext.Employees
             .FirstOrDefaultAsync(x => x.FullName.Equals("Чертополохова Анастасия Николаевна"));
+        var actualCountEmployees = _employeeContext.Employees.Count();
 
         // Assert
-        Assert.AreEqual(expected.FullName, _employeeDto.FullName);
-        Assert.IsNotNull(employeeIdExpected);
+        Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
+        Assert.AreEqual(expectedCountEmployees + 1, actualCountEmployees);
+        Assert.IsNotNull(expectedEmployeeId);
     }
 
     //[TestMethod]
@@ -146,25 +160,97 @@ public class EmployeeServiceTests : TestCommandBase
     //}
     #endregion
 
-
+    #region Тесты метода редактирования сотрудника
     [TestMethod]
-    public async Task Test_EditEmpoloyee_Succsess()
+    public async Task Test_EditEmpoloyee_Success()
     {
         // Arrange
-        _employeeDto.Id = Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"); //id Коноваловой
+        _employeeDto.Id = Guid.Parse("bc3d5e78-fe17-4e95-b08e-a56d58384325"); //id Popova
         _employeeDto.FullName = "Мохова Ирина Владимировна";
         _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
         _employeeDto.Department = "Сметный";
         _employeeDto.JobTitle = "Сметчик";
         _employeeDto.WorkStart = new DateTime(2006, 5, 18);
         _employeeDto.Salary = 51000.0M;
+        var expectedEmployee = _employeeContext.Employees.FirstOrDefault(x => x.Id == _employeeDto.Id);
 
         // Act
         var actual = await _employeeService.EditEmployeeAsync(_employeeDto);
-        var expectedEmployee = _employeeContext.Employees.FirstOrDefault(x => x.Id == Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"));
 
         // Assert
         Assert.IsTrue(actual);
         Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
     }
+    #endregion
+
+    #region Тесты метода удаления сотрудника
+
+    [TestMethod]
+    public async Task Test_RemoveEmpoloyee_Success()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48bbf");
+        var expectedCountEmployees = _employeeContext.Employees.Count();
+
+        // Act
+        var actualResult = await _employeeService.RemoveEmployeeAsync(employeeId);
+        var actualCountEmployees = _employeeContext.Employees.Count();
+
+        // Assert
+        Assert.IsTrue(actualResult);
+        Assert.AreEqual(expectedCountEmployees - 1, actualCountEmployees);
+    }
+
+    [TestMethod]
+    public async Task Test_RemoveEmpoloyee_EmployeeNotFound()
+    {
+        // Arrange
+        var employeeId1 = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        var employeeId2 = new Guid();
+
+        // Act
+        var actualResult1 = await _employeeService.RemoveEmployeeAsync(employeeId1);
+        var actualResult2 = await _employeeService.RemoveEmployeeAsync(employeeId2);
+
+        // Assert
+        Assert.IsFalse(actualResult1);
+        Assert.IsFalse(actualResult2);
+    }
+
+    #endregion
+
+    #region Тесты метода получения списка сотрудников
+
+    [TestMethod]
+    public async Task Test_GetListEmpoloyees_Success()
+    {
+        // Arrange
+        string expectedSortOrder = null;
+        string expectedSortField = null;
+        string expectedSearchString = null;
+        var expectedCountEmployees = _employeeContext.Employees.Count();
+
+        // Act
+        var actualResult = await _employeeService.GetSortedFilteredEmployeesAsync(expectedSortOrder, expectedSortField, expectedSearchString);
+
+        // Assert
+        Assert.AreEqual(expectedCountEmployees, actualResult.Count());
+    }
+
+    [TestMethod]
+    public async Task Test_GetListEmpoloyeesWithSortAndFilter_Success()
+    {
+        // Arrange
+        string expectedSortOrder = "asc";
+        string expectedSortField = "Salary";
+        string expectedSearchString = "chief";
+
+        // Act
+        var actualResult = await _employeeService.GetSortedFilteredEmployeesAsync(expectedSortOrder, expectedSortField, expectedSearchString);
+
+        // Assert
+        Assert.IsTrue(actualResult.Count() == 2);
+        Assert.IsTrue(actualResult.First().Salary.CompareTo(actualResult.Last().Salary) < 0);
+    }
+    #endregion
 }

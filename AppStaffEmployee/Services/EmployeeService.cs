@@ -87,7 +87,8 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
     {
         var employeesQuery = await _employeeContext.Employees.AsNoTracking().AsQueryable().ToListAsync();
-        //var employees = await employeesQuery.ToListAsync();
+
+        if (employeesQuery is null) return Enumerable.Empty<EmployeeDto>();
 
         if (!string.IsNullOrEmpty(searchString))
         {
@@ -129,7 +130,6 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
                     break;
             }
         }
-        var result = employeeDtos; // Для теста
         return employeeDtos;
     }
 }

@@ -29,9 +29,11 @@ public class EmployeeController : Controller
         int pageNumber = page ?? 1;
         var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
+
         ViewData["CurrentSortOrder"] = sortOrder;
         ViewData["CurrentSortField"] = sortField;
         ViewData["CurrentFilter"] = searchString;
+
         var result = employeeView.ToPagedList(pageNumber, _pageSize); // Для теста
         _logger.LogInformation("Контроллер получил список всех сотрудников с сортировкой и фильтром");
         return View(result);
