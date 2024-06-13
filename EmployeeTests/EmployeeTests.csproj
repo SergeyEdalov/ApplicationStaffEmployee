@@ -20,6 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\AppStaffEmployee\AppStaffEmployee.csproj" />
+    <ProjectReference Include="..\Identity.DAL\Identity.DAL.csproj" />
   </ItemGroup>
 
   <ItemGroup>

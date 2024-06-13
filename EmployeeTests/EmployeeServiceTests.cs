@@ -19,7 +19,7 @@ public class EmployeeServiceTests : TestCommandBase
     private static EmployeeDto _employeeDto;
 
     #region Конфигурирование системы
-    [AssemblyInitialize]
+    [ClassInitialize]
     public static void Init(TestContext context)
     {
         _employeeMockMapper = new Mock<IMapper>();
@@ -111,17 +111,19 @@ public class EmployeeServiceTests : TestCommandBase
     public async Task Test_AddEmpoloyee_Success()
     {
         // Arrange
-        _employeeDto = new EmployeeDto();
-        _employeeDto.FullName = "Чертополохова Анастасия Николаевна";
-        _employeeDto.Birthday = new DateTime(1965, 3, 20);
-        _employeeDto.Department = "Сметный";
-        _employeeDto.JobTitle = "Сметчик";
-        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
-        _employeeDto.Salary = 82000.0M;
+        _employeeDto = new EmployeeDto
+        {
+            FullName = "Чертополохова Анастасия Николаевна",
+            Birthday = new DateTime(1965, 3, 20),
+            Department = "Сметный",
+            JobTitle = "Сметчик",
+            WorkStart = new DateTime(2006, 5, 18),
+            Salary = 82000.0M
+        };
         var expectedCountEmployees = _employeeContext.Employees.Count();
 
         // Act
-        var expectedEmployeeId = await _employeeService.AddEmployeeAsync(_employeeDto);
+        var actualEmployeeId = await _employeeService.AddEmployeeAsync(_employeeDto);
         var expectedEmployee = await _employeeContext.Employees
             .FirstOrDefaultAsync(x => x.FullName.Equals("Чертополохова Анастасия Николаевна"));
         var actualCountEmployees = _employeeContext.Employees.Count();
@@ -129,35 +131,37 @@ public class EmployeeServiceTests : TestCommandBase
         // Assert
         Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
         Assert.AreEqual(expectedCountEmployees + 1, actualCountEmployees);
-        Assert.IsNotNull(expectedEmployeeId);
+        Assert.IsNotNull(actualEmployeeId);
     }
 
-    //[TestMethod]
-    ////[ExpectedException(typeof(Exception))]
-    //public async Task Test_AddEmpoloyee_Exception()
-    //{
-    //    // Arrange
-    //    _employeeDto.FullName = null;
-    //    _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
-    //    _employeeDto.Department = "Сметный";
-    //    _employeeDto.JobTitle = "Сметчик";
-    //    _employeeDto.WorkStart = new DateTime(2006, 5, 18);
-    //    _employeeDto.Salary = 82000.0M;
+    [TestMethod]
+    //[ExpectedException(typeof(Exception))]
+    public async Task Test_AddEmpoloyee_Exception()
+    {
+        // Arrange
+        _employeeDto = new EmployeeDto();
+        _employeeDto.FullName = null;
+        _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
+        _employeeDto.Department = "Сметный";
+        _employeeDto.JobTitle = "Сметчик";
+        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
+        _employeeDto.Salary = 82000.0M;
+        var expectedCountEmployees = _employeeContext.Employees.Count();
 
-    //    Exception ex = new Exception();
-    //    // Act
-    //    //Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(employeeDto));
-    //    //CleanUp();
-    //    var exception = Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
-    //    //Init();
-    //    var employeeModel = _employeeMockMapper.Object.Map<EmployeeModel>(_employeeDto);
-    //    //_employeeContext.Entry(employeeModel).State = EntityState.Detached;
-    //    _employeeContext.Employees.Remove(employeeModel);
-    //    _employeeContext.SaveChanges();
-    //    // Assert
-    //    Assert.IsNotNull(exception);
-    //    Assert.AreEqual("Ошибка добавления сотрудника", exception.Message);
-    //}
+        Exception ex = new Exception();
+        // Act
+        //Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(employeeDto));
+        //CleanUp();
+        var exception = Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
+        //Init();
+        var employeeModel = _employeeMockMapper.Object.Map<EmployeeModel>(_employeeDto);
+        //_employeeContext.Entry(employeeModel).State = EntityState.Detached;
+        _employeeContext.Employees.Remove(employeeModel);
+        _employeeContext.SaveChanges();
+        // Assert
+        Assert.IsNotNull(exception);
+        Assert.AreEqual("Ошибка добавления сотрудника", exception.Message);
+    }
     #endregion
 
     #region Тесты метода редактирования сотрудника
