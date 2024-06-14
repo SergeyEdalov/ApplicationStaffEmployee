@@ -175,7 +175,7 @@ public class EmployeeControllerTests
 
     #region Тесты метода Create 
     [TestMethod]
-    public async Task Test_Create_Success_ReturnEmployeeId()
+    public async Task Test_CreatePost_Success_ReturnEmployeeId()
     {
         // Arrange
         var model = new EmployeeViewModel
@@ -257,9 +257,113 @@ public class EmployeeControllerTests
 
     #region Тесты метода Edit 
     [TestMethod]
-    public async Task Test_Edit_Success_ReturnEmployeeId()
+    public async Task Test_Edit_Success_ReturnEmployeeView()
     {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        var employeeDto = new EmployeeDto
+        {
+            Id = employeeId,
+            FullName = "Test Employee",
+            Birthday = new DateTime(1980, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync(employeeDto);
 
+        // Act
+        var result = await _employeeController.Edit(employeeId);
+        var viewResult = result as ViewResult;
+        var model = viewResult?.Model as EmployeeViewModel;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.IsNotNull(viewResult);
+        Assert.AreEqual(employeeId, model.Id);
     }
+
+    [TestMethod]
+    public async Task Test_Edit_Error_EmployeeNotFound()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync((EmployeeDto)null);
+
+        // Act
+        var result = await _employeeController.Edit(employeeId);
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
+
+    [TestMethod]
+    public async Task Test_EditPost_Success()
+    {
+        // Arrange
+        var model = new EmployeeViewModel
+        {
+            Id = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851"),
+            FullName = "Test Employee",
+            Birthday = new DateTime(1980, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+
+        _employeeMockService.Setup(x => x.EditEmployeeAsync(It.IsAny<EmployeeDto>())).ReturnsAsync(true);
+
+        // Act
+        var result = await _employeeController.Edit(model);
+        var redirectResult = result as RedirectToActionResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+        Assert.AreEqual("Index", redirectResult.ActionName);
+    }
+
+    [TestMethod]
+    public async Task Test_EditPost_InvalidModelState()
+    {
+        // Arrange
+        var model = new EmployeeViewModel();
+        _employeeController.ModelState.AddModelError("Name", "Required");
+
+        // Act
+        var result = await _employeeController.Edit(model);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(model, viewResult.Model);
+    }
+
+    [TestMethod]
+    public async Task Test_EditPost_EditFailed()
+    {
+        // Arrange
+        var model = new EmployeeViewModel
+        {
+            Id = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851"),
+            FullName = "Test Employee",
+            Birthday = new DateTime(1980, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+
+        _employeeMockService.Setup(x => x.EditEmployeeAsync(It.IsAny<EmployeeDto>())).ReturnsAsync(false);
+
+        // Act
+        var result = await _employeeController.Edit(model);
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
+
     #endregion
 }
