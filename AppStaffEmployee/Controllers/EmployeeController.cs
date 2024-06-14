@@ -28,6 +28,9 @@ public class EmployeeController : Controller
     {
         int pageNumber = page ?? 1;
         var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
+        
+        if (employeesTable is null) return NotFound();
+        
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
 
         ViewData["CurrentSortOrder"] = sortOrder;
