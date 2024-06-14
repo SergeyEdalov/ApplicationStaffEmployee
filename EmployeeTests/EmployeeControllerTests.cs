@@ -65,48 +65,49 @@ public class EmployeeControllerTests
 
     #region Тесты метода Index 
     [TestMethod]
-    public async Task Test_Index_Success_ReturnViewModel()
+    public async Task Test_Index_Success_ReturnEmployeeViewModel()
     {
         // Arrange
         string sortOrder = null;
         string sortField = null;
         string searchString = null;
         var expectedEmployees = new List<EmployeeDto>
-    {
-        new EmployeeDto
         {
-            Id = Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"),
-            FullName = "Konovalova Irina Alekseevna",
-            Birthday = new DateTime(1978, 3, 30),
-            Department = "bookkeeping",
-            JobTitle = "chief accountant",
-            WorkStart = new DateTime(2014, 6, 6),
-            Salary = 90000.0M
-        },
-        new EmployeeDto
-        {
-            Id = Guid.Parse("a0cf8d7c-f8a1-460a-9b97-14a58fae574f"),
-            FullName = "Ermakov Sergey Vasilevich",
-            Birthday = new DateTime(1990, 5, 28),
-            Department = "financial",
-            JobTitle = "financial director",
-            WorkStart = new DateTime(2022, 6, 3),
-            Salary = 100000.0M
-        }
-    };
+            new EmployeeDto
+            {
+                Id = Guid.Parse("6afd4cd6-0fe0-4d0b-aa72-bd4bf97a4860"),
+                FullName = "Konovalova Irina Alekseevna",
+                Birthday = new DateTime(1978, 3, 30),
+                Department = "bookkeeping",
+                JobTitle = "chief accountant",
+                WorkStart = new DateTime(2014, 6, 6),
+                Salary = 90000.0M
+            },
+            new EmployeeDto
+            {
+                Id = Guid.Parse("a0cf8d7c-f8a1-460a-9b97-14a58fae574f"),
+                FullName = "Ermakov Sergey Vasilevich",
+                Birthday = new DateTime(1990, 5, 28),
+                Department = "financial",
+                JobTitle = "financial director",
+                WorkStart = new DateTime(2022, 6, 3),
+                Salary = 100000.0M
+            }
+        };
 
         _employeeMockService.Setup(x => x.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString))
             .ReturnsAsync(expectedEmployees);
         // Act
         var result = await _employeeController.Index(sortOrder, sortField, searchString, 1);
         var result2 = await _employeeController.Index(sortOrder, sortField, searchString, 1) as ViewResult;
+        var model = result2.Model as IPagedList<EmployeeViewModel>;
 
         // Assert
         Assert.IsInstanceOfType(result, typeof(ViewResult));
         Assert.IsInstanceOfType(result2.Model, typeof(IPagedList<EmployeeViewModel>));
-        var model = result2.Model as IPagedList<EmployeeViewModel>;
-        Assert.AreEqual(expectedEmployees.ToList().Count, model.ToList().Count);
 
+        Assert.AreEqual(expectedEmployees.Count, model.Count);
+        Assert.AreEqual(expectedEmployees.Select(x => x.FullName).First(), model.Select(x => x.FullName).First());
     }
 
     [TestMethod]
@@ -121,6 +122,50 @@ public class EmployeeControllerTests
 
         // Act
         var result = await _employeeController.Index(sortOrder, sortField, searchString, 1);
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
+    #endregion
+
+    #region Тесты метода Details 
+    [TestMethod]
+    public async Task Test_Details_Success_ReturnEmployeeViewModel()
+    {
+        // Arrange
+        var expectedEmployee = new EmployeeDto()
+        {
+            Id = Guid.Parse("bc3d5e78-fe17-4e95-b08e-a56d58384325"),
+            FullName = "Popov Ivan Nikolaevich",
+            Birthday = new DateTime(1985, 2, 5),
+            Department = "marketing",
+            JobTitle = "trainee",
+            WorkStart = new DateTime(2023, 9, 16),
+            Salary = 56000.0M
+        };
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync((Guid)expectedEmployee.Id))
+            .ReturnsAsync(expectedEmployee);
+
+        // Act
+        var result = await _employeeController.Details((Guid)expectedEmployee.Id) as ViewResult;
+        var model = result.Model as EmployeeViewModel;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(expectedEmployee.FullName, model.FullName);
+    }
+
+    [TestMethod]
+    public async Task Test_Details_ReturnNotFoundEmployee()
+    {
+        // Arrange
+        var employeeId = Guid.NewGuid();
+
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync((Guid)employeeId))
+            .ReturnsAsync((EmployeeDto)null);
+
+        // Act
+        var result = await _employeeController.Details((Guid)employeeId);
 
         // Assert
         Assert.IsInstanceOfType(result, typeof(NotFoundResult));
