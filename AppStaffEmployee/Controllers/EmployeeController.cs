@@ -69,7 +69,12 @@ public class EmployeeController : Controller
             _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
             return RedirectToAction("Details", new { id });
         }
-        catch (Exception ex) { return View(ex); }
+        catch (Exception ex) 
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            _logger.LogError("Ошибка добавления сотрудника {0}.", model.FullName);
+            return View(model);
+        }
 
     }
 

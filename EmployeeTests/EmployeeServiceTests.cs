@@ -13,14 +13,14 @@ namespace EmployeeTests;
 [TestClass]
 public class EmployeeServiceTests : TestCommandBase
 {
-    private static Mock<IMapper> _employeeMockMapper;
-    private static Mock<ILogger<EmployeeService>> _loggerMock;
-    private static EmployeeService _employeeService;
-    private static EmployeeDto _employeeDto;
+    private Mock<IMapper> _employeeMockMapper;
+    private Mock<ILogger<EmployeeService>> _loggerMock;
+    private EmployeeService _employeeService;
+    private EmployeeDto _employeeDto;
 
     #region Конфигурирование системы
-    [ClassInitialize]
-    public static void Init(TestContext context)
+    [TestInitialize]
+    public void Init()
     {
         _employeeMockMapper = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<EmployeeService>>();

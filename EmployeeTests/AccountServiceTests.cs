@@ -16,7 +16,7 @@ public class AccountServiceTests
     private static Mock<SignInManager<User>> _mockSignInManager;
     private static Mock<ILogger<AccountService>> _loggerMock;
     private static AccountService _accountService;
-    UserDto _userDto;
+    static UserDto _userDto;
 
     #region Конфигурирование системы
 
@@ -36,6 +36,12 @@ public class AccountServiceTests
             null, null, null, null);
         _loggerMock = new Mock<ILogger<AccountService>>();
         _accountService = new AccountService(_mockUserManager.Object, _mockSignInManager.Object, _loggerMock.Object);
+        _userDto = new UserDto()
+        {
+            UserName = "Test",
+            Password = "password",
+            RememberMe = false,
+        };
 
     }
     #endregion
@@ -46,12 +52,6 @@ public class AccountServiceTests
     public async Task Test_RegisterUser_Success()
     {
         // Arrange
-        _userDto = new UserDto()
-        {
-            UserName = "Test",
-            Password = "password",
-            RememberMe = false,
-        };
         _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
                .ReturnsAsync(IdentityResult.Success);
 
@@ -69,12 +69,6 @@ public class AccountServiceTests
     public async Task Test_LoginUser_Success()
     {
         // Arrange
-        _userDto = new UserDto()
-        {
-            UserName = "Test",
-            Password = "password",
-            RememberMe = false,
-        };
         _mockSignInManager.Setup(x => x.PasswordSignInAsync(
                    It.IsAny<string>(),
                    It.IsAny<string>(),

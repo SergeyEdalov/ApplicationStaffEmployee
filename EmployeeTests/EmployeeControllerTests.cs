@@ -6,6 +6,7 @@ using AppStaffEmployee.Services.Interfaces;
 using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.Extensions.Logging;
 using Moq;
 using System;
@@ -20,14 +21,14 @@ namespace EmployeeTests;
 [TestClass]
 public class EmployeeControllerTests
 {
-    private static Mock<IMapper> _employeeMockMapper;
-    private static Mock<ILogger<EmployeeController>> _loggerMock;
-    private static Mock<IEmployeeService<EmployeeDto, Guid>> _employeeMockService;
-    private static EmployeeController _employeeController;
+    private Mock<IMapper> _employeeMockMapper;
+    private Mock<ILogger<EmployeeController>> _loggerMock;
+    private Mock<IEmployeeService<EmployeeDto, Guid>> _employeeMockService;
+    private EmployeeController _employeeController;
 
     #region Конфигурирование системы
-    [ClassInitialize]
-    public static void Init(TestContext context)
+    [TestInitialize]
+    public void Init()
     {
         _employeeMockMapper = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<EmployeeController>>();
@@ -161,14 +162,104 @@ public class EmployeeControllerTests
         // Arrange
         var employeeId = Guid.NewGuid();
 
-        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync((Guid)employeeId))
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId))
             .ReturnsAsync((EmployeeDto)null);
 
         // Act
-        var result = await _employeeController.Details((Guid)employeeId);
+        var result = await _employeeController.Details(employeeId);
 
         // Assert
         Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
+    #endregion
+
+    #region Тесты метода Create 
+    [TestMethod]
+    public async Task Test_Create_Success_ReturnEmployeeId()
+    {
+        // Arrange
+        var model = new EmployeeViewModel
+        {
+            Id = Guid.NewGuid(),
+            FullName = "Test Employee",
+            Birthday = new DateTime(1985, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+        var employeeDto = new EmployeeDto
+        {
+            Id = model.Id,
+            FullName = model.FullName,
+            Birthday = model.Birthday,
+            Department = model.Department,
+            JobTitle = model.JobTitle,
+            WorkStart = model.WorkStart,
+            Salary = model.Salary
+        };
+        _employeeMockService.Setup(s => s.AddEmployeeAsync(It.IsAny<EmployeeDto>())).ReturnsAsync((Guid)employeeDto.Id);
+
+        // Act
+        var result = await _employeeController.Create(model);
+        var redirectResult = result as RedirectToActionResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+        Assert.AreEqual("Details", redirectResult.ActionName);
+        Assert.AreEqual(employeeDto.Id, redirectResult.RouteValues["id"]);
+    }
+
+    [TestMethod]
+    public async Task Test_CreatePost_InvalidModelState()
+    {
+        // Arrange
+        var model = new EmployeeViewModel();
+        _employeeController.ModelState.AddModelError("Name", "Required");
+
+        // Act
+        var result = await _employeeController.Create(model);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(viewResult.Model, model);
+    }
+
+    [TestMethod]
+    public async Task Test_CreatePost_Exception()
+    {
+        // Arrange
+        var model = new EmployeeViewModel
+        {
+            FullName = "Test Employee",
+            Birthday = new DateTime(1980, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+        var expectedException = new Exception("Test Exception");
+
+        _employeeMockService.Setup(s => s.AddEmployeeAsync(It.IsAny<EmployeeDto>())).ThrowsAsync(expectedException);
+
+        // Act
+        var result = await _employeeController.Create(model);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.IsNotNull(viewResult);
+        Assert.IsTrue(viewResult.ViewData.ModelState.ContainsKey(string.Empty));
+        Assert.AreEqual(expectedException.Message, viewResult.ViewData.ModelState[string.Empty].Errors[0].ErrorMessage);
+    }
+    #endregion
+
+    #region Тесты метода Edit 
+    [TestMethod]
+    public async Task Test_Edit_Success_ReturnEmployeeId()
+    {
+
     }
     #endregion
 }
