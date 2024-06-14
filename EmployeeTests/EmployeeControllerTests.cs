@@ -223,7 +223,7 @@ public class EmployeeControllerTests
 
         // Assert
         Assert.IsInstanceOfType(result, typeof(ViewResult));
-        Assert.AreEqual(viewResult.Model, model);
+        Assert.AreEqual(viewResult?.Model, model);
     }
 
     [TestMethod]
@@ -251,7 +251,7 @@ public class EmployeeControllerTests
         Assert.IsInstanceOfType(result, typeof(ViewResult));
         Assert.IsNotNull(viewResult);
         Assert.IsTrue(viewResult.ViewData.ModelState.ContainsKey(string.Empty));
-        Assert.AreEqual(expectedException.Message, viewResult.ViewData.ModelState[string.Empty].Errors[0].ErrorMessage);
+        Assert.AreEqual(expectedException.Message, viewResult.ViewData.ModelState[string.Empty]?.Errors[0].ErrorMessage);
     }
     #endregion
 
@@ -281,7 +281,7 @@ public class EmployeeControllerTests
         // Assert
         Assert.IsInstanceOfType(result, typeof(ViewResult));
         Assert.IsNotNull(viewResult);
-        Assert.AreEqual(employeeId, model.Id);
+        Assert.AreEqual(employeeId, model?.Id);
     }
 
     [TestMethod]
@@ -290,7 +290,7 @@ public class EmployeeControllerTests
         // Arrange
         var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
 
-        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync((EmployeeDto)null);
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync((EmployeeDto?)null);
 
         // Act
         var result = await _employeeController.Edit(employeeId);
@@ -365,5 +365,80 @@ public class EmployeeControllerTests
         Assert.IsInstanceOfType(result, typeof(NotFoundResult));
     }
 
+    #endregion
+
+    #region Тесты метода Edit 
+    [TestMethod]
+    public async Task Test_Delete_Success_ReturnEmployeePartialView()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        var employeeDto = new EmployeeDto
+        {
+            Id = employeeId,
+            FullName = "Test Employee",
+            Birthday = new DateTime(1980, 1, 1),
+            Department = "Test Department",
+            JobTitle = "Test Job Title",
+            WorkStart = new DateTime(2000, 1, 1),
+            Salary = 50000.0M
+        };
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync(employeeDto);
+
+        // Act
+        var result = await _employeeController.Delete(employeeId);
+        var partialViewREsult = result as PartialViewResult;
+        var model = partialViewREsult?.Model as EmployeeViewModel;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(PartialViewResult));
+        Assert.IsNotNull(partialViewREsult);
+        Assert.AreEqual(employeeId, model?.Id);
+    }
+
+    [TestMethod]
+    public async Task Test_Delete_Error_EmployeeNotFound()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync((EmployeeDto)null);
+
+        // Act
+        var result = await _employeeController.Delete(employeeId);
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
+
+    [TestMethod]
+    public async Task Test_DeleteConfirmed_Success_EmployeeRemove_Redirect()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        _employeeMockService.Setup(x => x.RemoveEmployeeAsync(employeeId)).ReturnsAsync(true);
+
+        // Act
+        var result = await _employeeController.DeleteConfirmed(employeeId);
+        var redirectResult = result as RedirectToActionResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+        Assert.IsNotNull(redirectResult);
+        Assert.AreEqual("Index", redirectResult.ActionName);
+    }
+
+    [TestMethod]
+    public async Task Test_DeleteConfirmed_Error_EmployeeNotFound()
+    {
+        // Arrange
+        var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
+        _employeeMockService.Setup(x => x.RemoveEmployeeAsync(employeeId)).ReturnsAsync(false);
+
+        // Act
+        var result = await _employeeController.DeleteConfirmed(employeeId);
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(NotFoundResult));
+    }
     #endregion
 }
