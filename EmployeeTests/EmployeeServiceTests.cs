@@ -111,15 +111,12 @@ public class EmployeeServiceTests : TestCommandBase
     public async Task Test_AddEmpoloyee_Success()
     {
         // Arrange
-        _employeeDto = new EmployeeDto
-        {
-            FullName = "Чертополохова Анастасия Николаевна",
-            Birthday = new DateTime(1965, 3, 20),
-            Department = "Сметный",
-            JobTitle = "Сметчик",
-            WorkStart = new DateTime(2006, 5, 18),
-            Salary = 82000.0M
-        };
+        _employeeDto.FullName = "Чертополохова Анастасия Николаевна";
+        _employeeDto.Birthday = new DateTime(1965, 3, 20);
+        _employeeDto.Department = "Сметный";
+        _employeeDto.JobTitle = "Сметчик";
+        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
+        _employeeDto.Salary = 82000.0M;
         var expectedCountEmployees = _employeeContext.Employees.Count();
 
         // Act
@@ -135,29 +132,14 @@ public class EmployeeServiceTests : TestCommandBase
     }
 
     [TestMethod]
-    //[ExpectedException(typeof(Exception))]
     public async Task Test_AddEmpoloyee_Exception()
     {
         // Arrange
-        _employeeDto = new EmployeeDto();
-        _employeeDto.FullName = null;
-        _employeeDto.Birthday = DateTime.Parse("1965, 3, 20");
-        _employeeDto.Department = "Сметный";
-        _employeeDto.JobTitle = "Сметчик";
-        _employeeDto.WorkStart = new DateTime(2006, 5, 18);
-        _employeeDto.Salary = 82000.0M;
-        var expectedCountEmployees = _employeeContext.Employees.Count();
 
-        Exception ex = new Exception();
         // Act
-        //Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(employeeDto));
-        //CleanUp();
-        var exception = Assert.ThrowsExceptionAsync<Exception>(async () => await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
-        //Init();
-        var employeeModel = _employeeMockMapper.Object.Map<EmployeeModel>(_employeeDto);
-        //_employeeContext.Entry(employeeModel).State = EntityState.Detached;
-        _employeeContext.Employees.Remove(employeeModel);
-        _employeeContext.SaveChanges();
+        var exception = Assert.ThrowsExceptionAsync<Exception>(async () => 
+            await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
+
         // Assert
         Assert.IsNotNull(exception);
         Assert.AreEqual("Ошибка добавления сотрудника", exception.Message);
