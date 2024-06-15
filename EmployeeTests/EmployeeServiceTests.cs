@@ -1,8 +1,6 @@
 using AppStaffEmployee.Models;
-using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services;
-using AppStaffEmployee.Services.Interfaces;
 using AutoMapper;
 using EmployeeTests.TestDbContext;
 using Microsoft.EntityFrameworkCore;
@@ -14,30 +12,29 @@ namespace EmployeeTests;
 [TestClass]
 public class EmployeeServiceTests : TestCommandBase
 {
-    private Mock<IMapper> _employeeMockMapper;
-    private Mock<ILogger<EmployeeService>> _loggerMock;
+    private static Mock<IMapper> _employeeMockMapper;
+    private static Mock<ILogger<EmployeeService>> _loggerMock;
     private EmployeeService _employeeService;
     private EmployeeDto _employeeDto;
 
     #region Конфигурирование системы
-    [TestInitialize]
-    public void Init()
+    [ClassInitialize]
+    public static void Init(TestContext context)
     {
         _employeeMockMapper = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<EmployeeService>>();
-        _employeeContext = getEContext();
         _employeeMockMapper.Setup(x => x.Map<EmployeeModel>(It.IsAny<EmployeeDto>()))
-                .Returns((EmployeeDto src) =>
-                new EmployeeModel()
-                {
-                    Id = (Guid)src.Id,
-                    FullName = src.FullName,
-                    Birthday = src.Birthday,
-                    Department = src.Department,
-                    JobTitle = src.JobTitle,
-                    WorkStart = src.WorkStart,
-                    Salary = src.Salary,
-                });
+        .Returns((EmployeeDto src) =>
+        new EmployeeModel()
+        {
+            Id = (Guid)src.Id,
+            FullName = src.FullName,
+            Birthday = src.Birthday,
+            Department = src.Department,
+            JobTitle = src.JobTitle,
+            WorkStart = src.WorkStart,
+            Salary = src.Salary,
+        });
         _employeeMockMapper.Setup(x => x.Map<EmployeeDto>(It.IsAny<EmployeeModel>()))
                 .Returns((EmployeeModel src) =>
                 new EmployeeDto()
@@ -62,10 +59,16 @@ public class EmployeeServiceTests : TestCommandBase
                     dest.Salary = src.Salary;
                     return dest;
                 });
+    }
 
+    [TestInitialize]
+    public void Start()
+    {
+        _employeeContext = getEContext();
         _employeeService = new EmployeeService(_employeeContext, _employeeMockMapper.Object, _loggerMock.Object);
         _employeeDto = new EmployeeDto();
     }
+
     [AssemblyCleanup]
     public static void CleanUp()
     {
@@ -79,37 +82,37 @@ public class EmployeeServiceTests : TestCommandBase
 
     #region Тесты метода получения идентификатора сотрудника
     [TestMethod]
-    public async Task Test_GetEmpoloyeeByID_Success()
+    public async Task Test_GetEmpoloyeeByID_Success_ReturnEmployeeId()
     {
         // Arrange
         var employeeId = new Guid("67bbefef-a586-4416-b5f5-8d70f3b51d44");
 
         // Act
-        var actual = await _employeeService.GetEmpoloyeeByIDAsync(employeeId);
+        var result = await _employeeService.GetEmpoloyeeByIDAsync(employeeId);
 
         // Assert
-        Assert.AreEqual(employeeId, actual.Id);
+        Assert.AreEqual(employeeId, result.Id);
     }
 
     [TestMethod]
-    public async Task Test_GetEmpoloyeeByID_NullId()
+    public async Task Test_GetEmpoloyeeByID_Error_ReturnNullId()
     {
         // Arrange
         var employeeId1 = new Guid("67bbefef-a586-4416-b5f5-8d70f3b51d56");
         var employeeId2 = new Guid();
         // Act
-        var actual1 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId1);
-        var actual2 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId2);
+        var result1 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId1);
+        var result2 = await _employeeService.GetEmpoloyeeByIDAsync(employeeId2);
 
         // Assert
-        Assert.IsNull(actual1);
-        Assert.IsNull(actual2);
+        Assert.IsNull(result1);
+        Assert.IsNull(result2);
     }
     #endregion
 
     #region Тесты метода добавления сотрудника
     [TestMethod]
-    public async Task Test_AddEmpoloyee_Success()
+    public async Task Test_AddEmpoloyee_Success_ReturnEmployeeId()
     {
         // Arrange
         _employeeDto.FullName = "Чертополохова Анастасия Николаевна";
@@ -133,13 +136,12 @@ public class EmployeeServiceTests : TestCommandBase
     }
 
     [TestMethod]
-    public async Task Test_AddEmpoloyee_Exception()
+    public async Task Test_AddEmpoloyee_Error_ReturnException()
     {
         // Arrange
-
         // Act
-        var exception = Assert.ThrowsExceptionAsync<Exception>(async () =>
-            await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
+        var exception = await Task.Run(() => Assert.ThrowsExceptionAsync<Exception>(async () =>
+            await _employeeService.AddEmployeeAsync(_employeeDto)).Result);
 
         // Assert
         Assert.IsNotNull(exception);
@@ -149,7 +151,7 @@ public class EmployeeServiceTests : TestCommandBase
 
     #region Тесты метода редактирования сотрудника
     [TestMethod]
-    public async Task Test_EditEmpoloyee_Success()
+    public async Task Test_EditEmpoloyee_Success_ReturnTrue()
     {
         // Arrange
         _employeeDto.Id = Guid.Parse("bc3d5e78-fe17-4e95-b08e-a56d58384325"); //id Popova
@@ -162,10 +164,10 @@ public class EmployeeServiceTests : TestCommandBase
         var expectedEmployee = _employeeContext.Employees.FirstOrDefault(x => x.Id == _employeeDto.Id);
 
         // Act
-        var actual = await _employeeService.EditEmployeeAsync(_employeeDto);
+        var result = await _employeeService.EditEmployeeAsync(_employeeDto);
 
         // Assert
-        Assert.IsTrue(actual);
+        Assert.IsTrue(result);
         Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
     }
     #endregion
@@ -173,7 +175,7 @@ public class EmployeeServiceTests : TestCommandBase
     #region Тесты метода удаления сотрудника
 
     [TestMethod]
-    public async Task Test_RemoveEmpoloyee_Success()
+    public async Task Test_RemoveEmpoloyee_Success_ReturnTrue()
     {
         // Arrange
         var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48bbf");
@@ -189,7 +191,7 @@ public class EmployeeServiceTests : TestCommandBase
     }
 
     [TestMethod]
-    public async Task Test_RemoveEmpoloyee_EmployeeNotFound()
+    public async Task Test_RemoveEmpoloyee_Error_EmployeeNotFound_ReturnFalse()
     {
         // Arrange
         var employeeId1 = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
@@ -203,13 +205,11 @@ public class EmployeeServiceTests : TestCommandBase
         Assert.IsFalse(actualResult1);
         Assert.IsFalse(actualResult2);
     }
-
     #endregion
 
     #region Тесты метода получения списка сотрудников
-
     [TestMethod]
-    public async Task Test_GetListEmpoloyees_Success()
+    public async Task Test_GetListEmpoloyees_Success_ReturnListEmployees()
     {
         // Arrange
         string expectedSortOrder = null;
@@ -225,7 +225,7 @@ public class EmployeeServiceTests : TestCommandBase
     }
 
     [TestMethod]
-    public async Task Test_GetListEmpoloyeesWithSortAndFilter_Success()
+    public async Task Test_GetListEmpoloyeesWithSortAndFilter_Success_ReturnListEmployees()
     {
         // Arrange
         string expectedSortOrder = "asc";

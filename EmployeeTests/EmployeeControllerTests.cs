@@ -13,14 +13,14 @@ namespace EmployeeTests;
 [TestClass]
 public class EmployeeControllerTests
 {
-    private Mock<IMapper> _employeeMockMapper;
-    private Mock<ILogger<EmployeeController>> _loggerMock;
-    private Mock<IEmployeeService<EmployeeDto, Guid>> _employeeMockService;
+    private static Mock<IMapper> _employeeMockMapper;
+    private static Mock<ILogger<EmployeeController>> _loggerMock;
+    private static Mock<IEmployeeService<EmployeeDto, Guid>> _employeeMockService;
     private EmployeeController _employeeController;
 
     #region Конфигурирование системы
-    [TestInitialize]
-    public void Init()
+    [ClassInitialize]
+    public static void Init(TestContext context)
     {
         _employeeMockMapper = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<EmployeeController>>();
@@ -50,9 +50,12 @@ public class EmployeeControllerTests
                     WorkStart = src.WorkStart,
                     Salary = src.Salary,
                 });
+    }
 
+    [TestInitialize]
+    public void Start()
+    {
         _employeeController = new EmployeeController(_employeeMockService.Object, _loggerMock.Object, _employeeMockMapper.Object);
-
     }
     #endregion
 
@@ -153,7 +156,6 @@ public class EmployeeControllerTests
     {
         // Arrange
         var employeeId = Guid.NewGuid();
-
         _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId))
             .ReturnsAsync((EmployeeDto)null);
 
@@ -281,7 +283,6 @@ public class EmployeeControllerTests
     {
         // Arrange
         var employeeId = new Guid("db51e04d-e114-4e7f-bfe2-87ab10a48851");
-
         _employeeMockService.Setup(x => x.GetEmpoloyeeByIDAsync(employeeId)).ReturnsAsync((EmployeeDto?)null);
 
         // Act
@@ -305,7 +306,6 @@ public class EmployeeControllerTests
             WorkStart = new DateTime(2000, 1, 1),
             Salary = 50000.0M
         };
-
         _employeeMockService.Setup(x => x.EditEmployeeAsync(It.IsAny<EmployeeDto>())).ReturnsAsync(true);
 
         // Act
@@ -347,7 +347,6 @@ public class EmployeeControllerTests
             WorkStart = new DateTime(2000, 1, 1),
             Salary = 50000.0M
         };
-
         _employeeMockService.Setup(x => x.EditEmployeeAsync(It.IsAny<EmployeeDto>())).ReturnsAsync(false);
 
         // Act
@@ -359,7 +358,7 @@ public class EmployeeControllerTests
 
     #endregion
 
-    #region Тесты метода Edit 
+    #region Тесты метода Delete 
     [TestMethod]
     public async Task Test_Delete_Success_ReturnEmployeePartialView()
     {

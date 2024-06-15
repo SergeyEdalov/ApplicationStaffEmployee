@@ -1,5 +1,4 @@
-﻿using ApplicationStaffEmployee.Controllers;
-using AppStaffEmployee.Controllers;
+﻿using AppStaffEmployee.Controllers;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
 using AppStaffEmployee.ViewModels.Identity;
@@ -14,14 +13,14 @@ namespace EmployeeTests;
 [TestClass]
 public class AccountControllerTests
 {
-    private Mock<IMapper> _employeeMockMapper;
-    private Mock<ILogger<AccountController>> _loggerMock;
-    private Mock<IAccountService> _accountMockService;
+    private static Mock<IMapper> _employeeMockMapper;
+    private static Mock<ILogger<AccountController>> _loggerMock;
+    private static Mock<IAccountService> _accountMockService;
     private AccountController _accountController;
 
     #region Конфигурирование системы
-    [TestInitialize]
-    public void Init()
+    [ClassInitialize]
+    public static void Init(TestContext context)
     {
         _employeeMockMapper = new Mock<IMapper>();
         _loggerMock = new Mock<ILogger<AccountController>>();
@@ -59,7 +58,11 @@ public class AccountControllerTests
                     RememberMe = src.RememberMe,
                     ReturnUrl = src.ReturnUrl,
                 });
+    }
 
+    [TestInitialize]
+    public void Start()
+    {
         _accountController = new AccountController(_accountMockService.Object, _employeeMockMapper.Object, _loggerMock.Object);
     }
     #endregion

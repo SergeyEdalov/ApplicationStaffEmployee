@@ -1,6 +1,5 @@
 ﻿using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services;
-using AppStaffEmployee.Services.Interfaces;
 using Identity.DAL.Entities;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -16,10 +15,9 @@ public class AccountServiceTests
     private static Mock<SignInManager<User>> _mockSignInManager;
     private static Mock<ILogger<AccountService>> _loggerMock;
     private static AccountService _accountService;
-    static UserDto _userDto;
+    private static UserDto _userDto;
 
     #region Конфигурирование системы
-
     [ClassInitialize]
     public static void Init(TestContext context)
     {
@@ -42,31 +40,29 @@ public class AccountServiceTests
             Password = "password",
             RememberMe = false,
         };
-
     }
     #endregion
 
     #region Тесты метода регистрации пользователя
-
     [TestMethod]
-    public async Task Test_RegisterUser_Success()
+    public async Task Test_RegisterUser_Success_ReturnIdentityResult()
     {
         // Arrange
         _mockUserManager.Setup(x => x.CreateAsync(It.IsAny<User>(), It.IsAny<string>()))
                .ReturnsAsync(IdentityResult.Success);
 
         // Act
-        var actual = await _accountService.RegisterAsync(_userDto);
+        var result = await _accountService.RegisterAsync(_userDto);
 
         // Assert
-        Assert.IsNotNull(actual);
+        Assert.IsNotNull(result);
     }
     #endregion
 
     #region Тесты метода логирования пользователя
 
     [TestMethod]
-    public async Task Test_LoginUser_Success()
+    public async Task Test_LoginUser_Success_ReturnSignInResult()
     {
         // Arrange
         _mockSignInManager.Setup(x => x.PasswordSignInAsync(
@@ -77,10 +73,10 @@ public class AccountServiceTests
                .ReturnsAsync(SignInResult.Success);
 
         // Act
-        var actual = await _accountService.LoginAsync(_userDto);
+        var result = await _accountService.LoginAsync(_userDto);
 
         // Assert
-        Assert.IsNotNull(actual);
+        Assert.IsNotNull(result);
     }
     #endregion
 }

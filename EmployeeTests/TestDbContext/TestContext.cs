@@ -1,6 +1,4 @@
-﻿using AppStaffEmployee.Models;
-using AppStaffEmployee.Models.Database;
-using Identity.DAL.IdentityDB;
+﻿using AppStaffEmployee.Models.Database;
 using Microsoft.EntityFrameworkCore;
 
 namespace EmployeeTests.TestDbContext;
@@ -18,21 +16,6 @@ public class TestDbContext
         var context = new EmployeeContext(options);
 
         context.Database.EnsureCreated();
-        //context.SaveChanges();
-        return context;
-    }
-
-    public static IdentityContext CreateTableUsers()
-    {
-        var builder = new DbContextOptionsBuilder<IdentityContext>()
-            .UseInMemoryDatabase("MessageTestDbContext");
-
-        var options = builder.Options;
-
-        var context = new IdentityContext(options);
-
-        context.Database.EnsureCreated();
-
         return context;
     }
 }
