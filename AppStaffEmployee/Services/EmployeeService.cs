@@ -2,10 +2,8 @@
 using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
-using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using X.PagedList;
 
 namespace AppStaffEmployee.Services;
@@ -34,6 +32,14 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<EmployeeDto?> GetEmpoloyeeByIDAsync(Guid employeeId)
     {
         var employee = await _employeeContext.Employees.FirstOrDefaultAsync(x => x.Id.Equals(employeeId));
+
+        if (employee is null)
+        {
+            _logger.LogWarning($"Не найден сотрудник в БД по id = {0}", employeeId);
+            return null;
+            //throw new NullReferenceException($"{employeeId} нет в базе данных");
+        }
+
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
         _logger.LogInformation("Получен id сотрудника {0}", employee.FullName);
         return employeeDto;
@@ -41,10 +47,15 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<Guid> AddEmployeeAsync(EmployeeDto? employeeData)
     {
         employeeData.Id = Guid.NewGuid();
-        await _employeeContext.AddAsync(_employeeMapper.Map<EmployeeModel>(employeeData));
-        await _employeeContext.SaveChangesAsync();
-        _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
-        return (Guid)employeeData.Id;
+        try
+        {
+            var employeeModel = _employeeMapper.Map<EmployeeModel>(employeeData);
+            await _employeeContext.AddAsync(employeeModel);
+            await _employeeContext.SaveChangesAsync();
+            _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
+            return (Guid)employeeData.Id;
+        }
+        catch (Exception ex) { throw new Exception("Ошибка добавления сотрудника"); }
     }
 
     public async Task<bool> EditEmployeeAsync(EmployeeDto employeeData)
@@ -76,7 +87,8 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
     {
         var employeesQuery = await _employeeContext.Employees.AsNoTracking().AsQueryable().ToListAsync();
-        //var employees = await employeesQuery.ToListAsync();
+
+        if (employeesQuery is null) return Enumerable.Empty<EmployeeDto>();
 
         if (!string.IsNullOrEmpty(searchString))
         {
@@ -118,7 +130,6 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
                     break;
             }
         }
-        var result = employeeDtos; // Для теста
         return employeeDtos;
     }
 }

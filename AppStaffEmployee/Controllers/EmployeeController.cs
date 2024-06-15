@@ -28,19 +28,24 @@ public class EmployeeController : Controller
     {
         int pageNumber = page ?? 1;
         var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
+        
+        if (employeesTable is null) return NotFound();
+        
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
+
         ViewData["CurrentSortOrder"] = sortOrder;
         ViewData["CurrentSortField"] = sortField;
         ViewData["CurrentFilter"] = searchString;
+
         var result = employeeView.ToPagedList(pageNumber, _pageSize); // Для теста
         _logger.LogInformation("Контроллер получил список всех сотрудников с сортировкой и фильтром");
         return View(result);
     }
 
-    public async Task<IActionResult> Details (Guid id)
+    public async Task<IActionResult> Details(Guid id)
     {
         var employee = await _employeeService.GetEmpoloyeeByIDAsync(id);
-        if (employee is null)  return NotFound();
+        if (employee is null) return NotFound();
 
         var employeeView = _mapper.Map<EmployeeViewModel>(employee);
         _logger.LogInformation("Получена информация о сотруднике {0}", employeeView.FullName);
@@ -56,13 +61,21 @@ public class EmployeeController : Controller
     public async Task<IActionResult> Create(EmployeeViewModel model)
     {
         if (!ModelState.IsValid) return View(model);
+        try
+        {
+            var employeeDto = _mapper.Map<EmployeeDto>(model);
+            var id = await _employeeService.AddEmployeeAsync(employeeDto);
 
-        var employeeDto = _mapper.Map<EmployeeDto>(model);
-        var id = await _employeeService.AddEmployeeAsync(employeeDto);
+            _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
+            return RedirectToAction("Details", new { id });
+        }
+        catch (Exception ex) 
+        {
+            ModelState.AddModelError(string.Empty, ex.Message);
+            _logger.LogError("Ошибка добавления сотрудника {0}.", model.FullName);
+            return View(model);
+        }
 
-        _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
-
-        return RedirectToAction("Details", new { id });
     }
 
     public async Task<IActionResult> Edit(Guid? id)
@@ -80,13 +93,13 @@ public class EmployeeController : Controller
     [HttpPost]
     public async Task<IActionResult> Edit(EmployeeViewModel model)
     {
-        if (!ModelState.IsValid) return View(model); 
+        if (!ModelState.IsValid) return View(model);
 
         var employeeDto = _mapper.Map<EmployeeDto>(model);
 
         var success = await _employeeService.EditEmployeeAsync(employeeDto);
-        
-        if(!success) return NotFound();
+
+        if (!success) return NotFound();
 
         _logger.LogInformation("Сотрудник {0} отредактирован.", employeeDto.FullName);
         return RedirectToAction("Index");
