@@ -7,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace EmployeeTests;
+namespace EmployeeTests.ServicesTests;
 
 [TestClass]
 public class EmployeeServiceTests : TestCommandBase
@@ -170,10 +170,20 @@ public class EmployeeServiceTests : TestCommandBase
         Assert.IsTrue(result);
         Assert.AreEqual(expectedEmployee.FullName, _employeeDto.FullName);
     }
+
+    [TestMethod]
+    public async Task Test_EditEmpoloyee_Error_ReturnFalse_NullEmployee()
+    {
+        // Arrange
+        // Act
+        var result = await _employeeService.EditEmployeeAsync(_employeeDto);
+
+        // Assert
+        Assert.IsFalse(result);
+    }
     #endregion
 
     #region Тесты метода удаления сотрудника
-
     [TestMethod]
     public async Task Test_RemoveEmpoloyee_Success_ReturnTrue()
     {

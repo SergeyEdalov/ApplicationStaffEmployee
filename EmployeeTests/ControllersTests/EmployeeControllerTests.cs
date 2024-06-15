@@ -8,7 +8,7 @@ using Microsoft.Extensions.Logging;
 using Moq;
 using X.PagedList;
 
-namespace EmployeeTests;
+namespace EmployeeTests.ControllersTests;
 
 [TestClass]
 public class EmployeeControllerTests

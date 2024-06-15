@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace EmployeeTests;
+namespace EmployeeTests.ServicesTests;
 
 [TestClass]
 public class AccountServiceTests

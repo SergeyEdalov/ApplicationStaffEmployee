@@ -8,7 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
-namespace EmployeeTests;
+namespace EmployeeTests.ControllersTests;
 
 [TestClass]
 public class AccountControllerTests
