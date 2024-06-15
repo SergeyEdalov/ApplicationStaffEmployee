@@ -2,6 +2,7 @@ using AppStaffEmployee.Models;
 using AppStaffEmployee.Models.Database;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services;
+using AppStaffEmployee.Services.Interfaces;
 using AutoMapper;
 using EmployeeTests.TestDbContext;
 using Microsoft.EntityFrameworkCore;
@@ -135,9 +136,9 @@ public class EmployeeServiceTests : TestCommandBase
     public async Task Test_AddEmpoloyee_Exception()
     {
         // Arrange
-        
+
         // Act
-        var exception = Assert.ThrowsExceptionAsync<Exception>(async () => 
+        var exception = Assert.ThrowsExceptionAsync<Exception>(async () =>
             await _employeeService.AddEmployeeAsync(_employeeDto)).Result;
 
         // Assert

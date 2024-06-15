@@ -1,8 +1,11 @@
-﻿using AppStaffEmployee.Controllers;
+﻿using ApplicationStaffEmployee.Controllers;
+using AppStaffEmployee.Controllers;
 using AppStaffEmployee.Models.Dto;
 using AppStaffEmployee.Services.Interfaces;
 using AppStaffEmployee.ViewModels.Identity;
 using AutoMapper;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -63,18 +66,137 @@ public class AccountControllerTests
 
     #region Тесты метода Register
     [TestMethod]
-    public async Task Test_Index_Success_ReturnEmployeeViewModel()
+    public async Task Test_RegisterPost_Success_ReturnRedirectToAction()
     {
         // Arrange
+        var registerModel = new RegisterUserViewModel()
+        {
+            UserName = "TestUser",
+            Password = "TestPassword",
+            PasswordConfirmed = "TestPassword"
+        };
+        _accountMockService.Setup(x => x.RegisterAsync(It.IsAny<UserDto>())).ReturnsAsync(IdentityResult.Success);
 
         // Act
-
+        var result = await _accountController.Register(registerModel);
+        var redirectResult = result as RedirectToActionResult;
 
         // Assert
-
+        Assert.IsInstanceOfType(result, typeof(RedirectToActionResult));
+        Assert.IsNotNull(redirectResult);
+        Assert.AreEqual("Index", redirectResult.ActionName);
+        Assert.AreEqual("Home", redirectResult.ControllerName);
     }
 
+    [TestMethod]
+    public async Task Test_RegisterPost_Error_ModelIsNotValid()
+    {
+        // Arrange
+        var registerModel = new RegisterUserViewModel();
+        _accountController.ModelState.AddModelError("Name", "Required");
 
+        // Act
+        var result = await _accountController.Register(registerModel);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(viewResult?.Model, registerModel);
+    }
+
+    [TestMethod]
+    public async Task Test_RegisterPost_Error_ReturnViewWithErrors()
+    {
+        // Arrange
+        var registerModel = new RegisterUserViewModel()
+        {
+            UserName = "TestUser",
+            Password = "TestPassword",
+            PasswordConfirmed = "TestPassword"
+        };
+        var identityErrors = new List<IdentityError>
+        {
+            new IdentityError { Description = "Error 1" },
+            new IdentityError { Description = "Error 2" }
+        };
+        var identityResult = IdentityResult.Failed(identityErrors.ToArray());
+        _accountMockService.Setup(x => x.RegisterAsync(It.IsAny<UserDto>())).ReturnsAsync(identityResult);
+
+        // Act
+        var result = await _accountController.Register(registerModel);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(registerModel, viewResult.Model);
+        Assert.IsTrue(viewResult.ViewData.ModelState.ContainsKey(string.Empty));
+        Assert.AreEqual(2, viewResult.ViewData.ModelState[string.Empty].Errors.Count);
+        Assert.AreEqual("Error 1", viewResult.ViewData.ModelState[string.Empty].Errors[0].ErrorMessage);
+        Assert.AreEqual("Error 2", viewResult.ViewData.ModelState[string.Empty].Errors[1].ErrorMessage);
+    }
     #endregion
 
+    #region Тесты метода Login
+    [TestMethod]
+    public async Task Test_LoginPost_Success_ReturnRedirectToAction()
+    {
+        // Arrange
+        var loginModel = new LoginViewModel()
+        {
+            UserName = "TestUser",
+            Password = "TestPassword",
+            ReturnUrl = "/Home"
+        };
+        _accountMockService.Setup(x => x.LoginAsync(It.IsAny<UserDto>()))
+            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
+
+        // Act
+        var result = await _accountController.Login(loginModel);
+        var redirectResult = result as LocalRedirectResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(LocalRedirectResult));
+        Assert.IsNotNull(redirectResult);
+        Assert.AreEqual(loginModel.ReturnUrl, redirectResult.Url);
+    }
+
+    [TestMethod]
+    public async Task Test_LoginPost_Error_ModelIsNotValid()
+    {
+        // Arrange
+        var loginModel = new LoginViewModel();
+        _accountController.ModelState.AddModelError("Name", "Required");
+
+        // Act
+        var result = await _accountController.Login(loginModel);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.AreEqual(viewResult?.Model, loginModel);
+    }
+
+    [TestMethod]
+    public async Task Test_LoginPost_Error_ReturnViewWithErrors()
+    {
+        // Arrange
+        var loginModel = new LoginViewModel()
+        {
+            UserName = "TestUser",
+            Password = "TestPassword",
+        };
+        _accountMockService.Setup(x => x.LoginAsync(It.IsAny<UserDto>()))
+            .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.NotAllowed);
+
+        // Act
+        var result = await _accountController.Login(loginModel);
+        var viewResult = result as ViewResult;
+
+        // Assert
+        Assert.IsInstanceOfType(result, typeof(ViewResult));
+        Assert.IsNotNull(viewResult);
+        Assert.IsTrue(_accountController.ModelState.ContainsKey(""));
+        Assert.AreEqual("Неверное имя пользователя или пароль", _accountController.ModelState[""].Errors[0].ErrorMessage);
+    }
+    #endregion
 }
