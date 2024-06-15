@@ -24,8 +24,8 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
     public async Task<IEnumerable<EmployeeDto>> GetAllEmployeesAsync()
     {
         var employeeList = await _employeeContext.Employees.Select(x => _employeeMapper.Map<EmployeeDto>(x)).ToListAsync();
-        _logger.LogInformation("Получен список всех сотрудников");
 
+        _logger.LogInformation("Получен список всех сотрудников");
         return employeeList;
     }
 
@@ -37,13 +37,13 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         {
             _logger.LogWarning($"Не найден сотрудник в БД по id = {0}", employeeId);
             return null;
-            //throw new NullReferenceException($"{employeeId} нет в базе данных");
         }
-
         var employeeDto = _employeeMapper.Map<EmployeeDto>(employee);
+        
         _logger.LogInformation("Получен id сотрудника {0}", employee.FullName);
         return employeeDto;
     }
+
     public async Task<Guid> AddEmployeeAsync(EmployeeDto? employeeData)
     {
         employeeData.Id = Guid.NewGuid();
@@ -52,10 +52,11 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
             var employeeModel = _employeeMapper.Map<EmployeeModel>(employeeData);
             await _employeeContext.AddAsync(employeeModel);
             await _employeeContext.SaveChangesAsync();
+            
             _logger.LogInformation("Добавлен новый сотрудник {0}", employeeData.FullName);
             return (Guid)employeeData.Id;
         }
-        catch (Exception ex) { throw new Exception("Ошибка добавления сотрудника"); }
+        catch (Exception) { throw new Exception("Ошибка добавления сотрудника"); }
     }
 
     public async Task<bool> EditEmployeeAsync(EmployeeDto employeeData)
@@ -66,6 +67,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
         _employeeMapper.Map(employeeData, targetEmployee);
 
         await _employeeContext.SaveChangesAsync();
+
         _logger.LogInformation("Сотрудник {0} отредактирован", employeeData.FullName);
         return true;
     }
@@ -78,11 +80,10 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
 
         _employeeContext.Employees.Remove(targetEmployee);
         await _employeeContext.SaveChangesAsync();
-        _logger.LogInformation("Сотрудник {0} удален", targetEmployee.FullName);
 
+        _logger.LogInformation("Сотрудник {0} удален", targetEmployee.FullName);
         return true;
     }
-
 
     public async Task<IEnumerable<EmployeeDto>> GetSortedFilteredEmployeesAsync(string sortOrder, string sortField, string searchString)
     {
@@ -101,7 +102,7 @@ public class EmployeeService : IEmployeeService<EmployeeDto, Guid>
                 e.Salary.ToString().Contains(searchString))
                 .ToList();
         }
-        var employeeDtos = employeesQuery.Select(e => _employeeMapper.Map<EmployeeDto>(e));
+        var employeeDtos = employeesQuery.Select(_employeeMapper.Map<EmployeeDto>);
 
         if (!string.IsNullOrEmpty(sortField) && !string.IsNullOrEmpty(sortOrder))
         {

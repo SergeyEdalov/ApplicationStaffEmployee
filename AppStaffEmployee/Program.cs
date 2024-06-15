@@ -9,7 +9,6 @@ using Identity.DAL.IdentityDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Identity.DAL.Entities;
-using System.Diagnostics;
 
 namespace AppStaffEmployee;
 
@@ -71,8 +70,6 @@ public class Program
                 return new IdentityContext(optionsBuilder.Options);
             }).InstancePerDependency();
         });
-        //builder.Services.AddDbContext<EmployeeContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
-        //builder.Services.AddDbContext<IdentityContext>(opt => opt.UseNpgsql(config.GetConnectionString("employeeDb")));
         builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
         builder.Services.AddSingleton<IAccountService, AccountService>();
 
@@ -91,11 +88,9 @@ public class Program
 
         var app = builder.Build();
 
-        // Configure the HTTP request pipeline.
         if (!app.Environment.IsDevelopment())
         {
             app.UseExceptionHandler("/Home/Error");
-            // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
             app.UseHsts();
         }
 

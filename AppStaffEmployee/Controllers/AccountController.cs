@@ -79,10 +79,13 @@ public class AccountController : Controller
         return View(model);
     }
     #endregion
+
+    #region Выход из системы
     public async Task<IActionResult> Logout()
     {
         await _accountService.LogoutAsync();
         return RedirectToAction("Index", "Home");
     }
+    #endregion
     public async Task<IActionResult> AccessDenied() => View();
 }

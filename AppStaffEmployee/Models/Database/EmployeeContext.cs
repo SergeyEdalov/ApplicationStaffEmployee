@@ -1,5 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using AppStaffEmployee.ViewModels;
 
 namespace AppStaffEmployee.Models.Database;
 
@@ -14,7 +13,6 @@ public class EmployeeContext : DbContext
         _connectionString = ConnectionString;
     }
     public EmployeeContext(DbContextOptions<EmployeeContext> options) : base(options) { }
-
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

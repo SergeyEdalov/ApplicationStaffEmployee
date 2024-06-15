@@ -29,7 +29,6 @@ public class AccountService : IAccountService
         if (result.Succeeded)
         {
             _logger.LogInformation("Пользователь {0} успешно создан", user);
-
             await _signInManager.SignInAsync(user, isPersistent: false);
         }
         return result;

@@ -1,6 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace AppStaffEmployee.Models;
+﻿namespace AppStaffEmployee.Models;
 
 public class EmployeeModel
 {

@@ -1,6 +1,4 @@
-using AppStaffEmployee.Models;
 using Microsoft.AspNetCore.Mvc;
-using System.Diagnostics;
 
 namespace AppStaffEmployee.Controllers;
 
@@ -15,6 +13,7 @@ public class HomeController : Controller
 
     public async Task<IActionResult> Index()
     {
+        _logger.LogInformation("Выведена домашняя страница");
         return View();
     }
 }

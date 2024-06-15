@@ -4,7 +4,6 @@ using AppStaffEmployee.ViewModels;
 using AutoMapper;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Drawing.Printing;
 using X.PagedList;
 
 namespace ApplicationStaffEmployee.Controllers;
@@ -28,16 +27,16 @@ public class EmployeeController : Controller
     {
         int pageNumber = page ?? 1;
         var employeesTable = await _employeeService.GetSortedFilteredEmployeesAsync(sortOrder, sortField, searchString);
-        
+
         if (employeesTable is null) return NotFound();
-        
+
         var employeeView = employeesTable.Select(_mapper.Map<EmployeeViewModel>);
 
         ViewData["CurrentSortOrder"] = sortOrder;
         ViewData["CurrentSortField"] = sortField;
         ViewData["CurrentFilter"] = searchString;
 
-        var result = employeeView.ToPagedList(pageNumber, _pageSize); // Для теста
+        var result = employeeView.ToPagedList(pageNumber, _pageSize);
         _logger.LogInformation("Контроллер получил список всех сотрудников с сортировкой и фильтром");
         return View(result);
     }
@@ -52,10 +51,7 @@ public class EmployeeController : Controller
         return View(employeeView);
     }
 
-    public IActionResult Create()
-    {
-        return View("Create", new EmployeeViewModel());
-    }
+    public IActionResult Create() => View("Create", new EmployeeViewModel());
 
     [HttpPost]
     public async Task<IActionResult> Create(EmployeeViewModel model)
@@ -69,7 +65,7 @@ public class EmployeeController : Controller
             _logger.LogInformation("Добавлен новый сотрудник {0}. Переход на страницу \"Детали\" ", employeeDto.FullName);
             return RedirectToAction("Details", new { id });
         }
-        catch (Exception ex) 
+        catch (Exception ex)
         {
             ModelState.AddModelError(string.Empty, ex.Message);
             _logger.LogError("Ошибка добавления сотрудника {0}.", model.FullName);
@@ -124,7 +120,6 @@ public class EmployeeController : Controller
         if (!success) return NotFound();
 
         _logger.LogInformation("Сотрудник {0} удален из списка.", id);
-
         return RedirectToAction("Index");
     }
 }
