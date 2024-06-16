@@ -9,6 +9,7 @@ using Identity.DAL.IdentityDB;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Identity.DAL.Entities;
+using System.Diagnostics;
 
 namespace AppStaffEmployee;
 
@@ -28,14 +29,14 @@ public class Program
 
         builder.Services.Configure<IdentityOptions>(opt =>
         {
-            #if DEBUG
+#if DEBUG
             opt.Password.RequireDigit = false;
             opt.Password.RequireLowercase = false;
             opt.Password.RequireUppercase = false;
             opt.Password.RequireNonAlphanumeric = false;
             opt.Password.RequiredLength = 3;
             opt.Password.RequiredUniqueChars = 3;
-            #endif
+#endif
             opt.User.RequireUniqueEmail = false;
 
             opt.Lockout.AllowedForNewUsers = false;
@@ -73,17 +74,30 @@ public class Program
         builder.Services.AddSingleton<IEmployeeService<EmployeeDto, Guid>, EmployeeService>();
         builder.Services.AddSingleton<IAccountService, AccountService>();
 
-        #if RELEASE
+#if RELEASE
         builder.WebHost.ConfigureKestrel((context, options) =>
         {
-            options.ListenAnyIP(7129, listenOptions =>
+            //var rootPath = Directory.GetParent(context.HostingEnvironment.ContentRootPath).FullName;
+            //var certPath = Path.Combine(rootPath, "certificates", "aspnetapp.pfx");
+            var certPath = Path.Combine("/app/certificates", "aspnetapp.pfx");
+            if (File.Exists(certPath))
             {
-                listenOptions.UseHttps("/app/aspnetapp.pfx", "Str0ngP@ssw0rd!");
-            });
-            Debug.Print("!!!");
+                options.ListenAnyIP(7129, listenOptions =>
+                {
+                    listenOptions.UseHttps(certPath, "Str0ngP@ssw0rd!");
+                });
+                Debug.Print("Kestrel is configured to use HTTPS.");
+            }
+            else
+            {
+                var logger = LoggerFactory.Create(logging => logging.AddConsole()).CreateLogger<Program>();
+                logger.LogError("Certificate file not found: {CertPath}", certPath);
+                throw new FileNotFoundException("Certificate file not found", certPath);
+            }
         });
-        #endif
-
+#endif
+        builder.Logging.ClearProviders();
+        builder.Logging.AddConsole();
         #endregion
 
         var app = builder.Build();
