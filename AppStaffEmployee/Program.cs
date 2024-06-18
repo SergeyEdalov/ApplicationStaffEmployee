@@ -77,8 +77,6 @@ public class Program
 #if RELEASE
         builder.WebHost.ConfigureKestrel((context, options) =>
         {
-            //var rootPath = Directory.GetParent(context.HostingEnvironment.ContentRootPath).FullName;
-            //var certPath = Path.Combine(rootPath, "certificates", "aspnetapp.pfx");
             var certPath = Path.Combine("/app/certificates", "aspnetapp.pfx");
             if (File.Exists(certPath))
             {
